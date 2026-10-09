@@ -156,7 +156,7 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* ====== À REMPLIR : configuration de ton projet Firebase (voir LISEZMOI.txt) ====== */
-const CFG={apiKey:"COLLE_ICI",authDomain:"COLLE_ICI",databaseURL:"COLLE_ICI",projectId:"COLLE_ICI",appId:"COLLE_ICI"};
+const CFG={apiKey:"AIzaSyDS9M6wbnbnh5VzF4FbjCnKmvw0c_TMwTo",authDomain:"sm1-classe.firebaseapp.com",databaseURL:"https://sm1-classe-default-rtdb.europe-west1.firebasedatabase.app",projectId:"sm1-classe",appId:"1:409210961184:web:03d1623a892421d99c2b45"};
 let A,Au,D;
 if(window.__FB){({A,Au,D}=window.__FB)}else{
  if(CFG.apiKey.startsWith('COLLE')){$('#setup').hidden=false;return}

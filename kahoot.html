@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Arena · Le duel de maths de la classe</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#081230;--navy2:#10285c;--gold:#f6c244;--cyan:#4cc9f0;--on:#f3f6ff;--m:#b8c3e3;--hd:'Sora','Segoe UI',Arial,sans-serif;--bd:'Manrope','Segoe UI',Arial,sans-serif;
+--c0:#e21b3c;--c1:#1368ce;--c2:#d89e00;--c3:#26890c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(165deg,var(--navy),var(--navy2));background-attachment:fixed;color:var(--on);font:400 1.05rem/1.5 var(--bd);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:var(--hd);margin:0;line-height:1.15;letter-spacing:-.02em}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:1.4rem 1.2rem 2.4rem;min-height:100%;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:10px}
+.btn{border:0;cursor:pointer;border-radius:999px;padding:.9rem 1.7rem;background:linear-gradient(135deg,#ffd877,var(--gold));color:#1b1403;font:700 1rem var(--bd);transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -10px rgba(246,194,68,.8)}
+.btn.o{background:rgba(255,255,255,.08);color:var(--on);border:1.5px solid rgba(243,246,255,.35)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.back{background:none;border:0;color:var(--m);cursor:pointer;font:600 .95rem var(--bd);padding:.3rem 0;margin-bottom:.6rem}
+.ptitle{font-size:1.8rem;margin:.2rem 0 .6rem}
+/* intro */
+#intro{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;min-height:calc(100vh - 4rem)}
+.sym{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.sym span{position:absolute;bottom:-10vh;color:rgba(255,255,255,.13);font:700 2rem var(--hd);animation:drift linear infinite}
+@keyframes drift{0%{transform:translateY(0) rotate(0);opacity:0}10%,90%{opacity:1}100%{transform:translateY(-120vh) rotate(var(--r))}}
+.orb{width:110px;height:110px;margin:0 auto 1.6rem;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 30% 30%,#ffd877,var(--gold) 55%,#b9851a);color:#1b1403;font:800 3.4rem var(--hd);box-shadow:0 0 60px rgba(246,194,68,.45);animation:float 4s ease-in-out infinite}
+.orb::before,.orb::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px dashed rgba(76,201,240,.55);animation:spin 9s linear infinite}
+.orb::after{inset:-30px;border-color:rgba(246,194,68,.35);animation-duration:14s;animation-direction:reverse}
+@keyframes float{50%{transform:translateY(-12px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#ttl{font:800 clamp(2.8rem,11vw,5.6rem)/1 var(--hd);letter-spacing:.04em;margin:.6rem 0 .5rem}
+#ttl span{display:inline-block;opacity:0;transform:translateY(40px) scale(.6);animation:letter .7s cubic-bezier(.2,1.4,.3,1) forwards;animation-delay:calc(.2s + var(--i)*.07s)}
+#ttl span:nth-child(n+6){color:var(--gold)}
+#ttl .sp{display:inline-block;width:.35em}
+@keyframes letter{to{opacity:1;transform:none}}
+.tag{font:700 1.1rem var(--hd);color:var(--cyan);margin:0;opacity:0;animation:fadeup .8s 1s forwards}
+.para{max-width:58ch;margin:1.1rem auto 0;color:var(--m);opacity:0;animation:fadeup .8s 1.2s forwards}
+.menu3{display:grid;gap:.8rem;max-width:420px;width:100%;margin:1.8rem auto 0;opacity:0;animation:fadeup .8s 1.5s forwards}
+.menu3 .btn{font-size:1.1rem;padding:1rem 1.4rem}
+@keyframes fadeup{from{transform:translateY(20px)}to{opacity:1;transform:none}}
+/* config */
+.box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:1.2rem 1.3rem;margin-top:1rem}
+.box h3{font-size:1rem;color:var(--m);font-weight:600;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.box h3 button{background:none;border:0;color:var(--gold);cursor:pointer;font:600 .85rem var(--bd)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);color:var(--on);border-radius:999px;padding:.5rem 1rem;font:600 .92rem var(--bd);cursor:pointer;transition:background .2s,border-color .2s}
+.chip:hover{border-color:var(--cyan)}
+.chip[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:#1b1403}
+.chip small{opacity:.7;font-weight:500;margin-left:.3rem}
+.go{margin-top:1.4rem;text-align:center}
+.go .btn{font-size:1.15rem;padding:1.05rem 2.6rem}
+.hint{color:var(--m);font-size:.85rem;margin-top:.7rem}
+input.in{width:100%;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.07);color:var(--on);border-radius:14px;padding:.9rem 1rem;font:600 1.1rem var(--bd);margin:.3rem 0 .9rem}
+input.in.cd{text-transform:uppercase;letter-spacing:.35em;text-align:center;font-size:1.7rem}
+.lk{display:flex;gap:.5rem}.lk input{flex:1;margin:0;font-size:.85rem}
+.code{font:800 clamp(3.2rem,15vw,6.4rem)/1 var(--hd);letter-spacing:.16em;color:var(--gold);text-align:center;margin:.8rem 0;animation:pulse 2s infinite}
+@keyframes pulse{50%{transform:scale(1.04)}}
+#wait{text-align:center;padding-top:15vh}
+#wait .orb{width:90px;height:90px;font-size:2.7rem}
+/* jeu */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;font:700 .95rem var(--hd)}
+.hud b{color:var(--gold)}
+.pill{background:rgba(255,255,255,.1);border-radius:999px;padding:.3rem .9rem}
+.hud .btn{padding:.3rem .9rem;font-size:.85rem}
+.badge{color:#fff}.strk{color:#ff9f43}.hearts{letter-spacing:.1em}
+.bar{height:10px;border-radius:6px;background:rgba(255,255,255,.14);margin:.8rem 0 1.2rem;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));transform-origin:left;transition:transform .12s linear}
+.bar i.low{background:linear-gradient(90deg,#ff8d7a,#e21b3c);animation:blink .45s infinite alternate}
+@keyframes blink{to{opacity:.5}}
+.q{background:#fff;color:#0b1633;border-radius:20px;padding:1.5rem 1.4rem;font:700 clamp(1.2rem,3.4vw,1.7rem)/1.35 var(--hd);text-align:center;min-height:130px;display:grid;place-items:center;box-shadow:0 20px 40px -22px #000;animation:qin .5s cubic-bezier(.2,1.2,.3,1)}
+@keyframes qin{from{opacity:0;transform:translateY(-24px) scale(.96)}}
+.q small{display:block;font:600 .8rem var(--bd);color:#55607f;margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:1rem}
+.a{border:0;cursor:pointer;border-radius:16px;padding:1rem;min-height:92px;color:#fff;font:700 clamp(1rem,2.8vw,1.3rem)/1.3 var(--hd);display:flex;align-items:center;gap:.8rem;text-align:left;box-shadow:0 6px 0 rgba(0,0,0,.28);transition:transform .15s,opacity .3s,filter .3s;animation:ain .45s cubic-bezier(.2,1.3,.3,1) both;animation-delay:calc(.1s + var(--n,0)*.08s)}
+@keyframes ain{from{opacity:0;transform:scale(.7)}}
+.a:hover{transform:translateY(-3px)}.a:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.a em{font:800 1.4rem var(--hd);font-style:normal;opacity:.85;min-width:1.6rem;text-align:center}
+.a:nth-child(1){background:var(--c0)}.a:nth-child(2){background:var(--c1)}.a:nth-child(3){background:var(--c2)}.a:nth-child(4){background:var(--c3)}
+.ans.view .a{pointer-events:none}
+.ans.picked .a{pointer-events:none}.ans.picked .a:not(.sel){opacity:.4}.a.sel{outline:4px solid #fff}
+.ans.done .a{pointer-events:none;opacity:.35;filter:grayscale(.6)}
+.ans.done .a.ok{opacity:1;filter:none;outline:4px solid #fff;animation:pop .5s}
+.ans.done .a.no{opacity:.9;filter:none;outline:4px solid #ff8d7a;animation:shake .4s}
+@keyframes pop{40%{transform:scale(1.05)}}
+@keyframes shake{25%{translate:-6px 0}75%{translate:6px 0}}
+.st{text-align:center;color:var(--m);margin-top:.7rem;font-weight:600}
+.fb{margin-top:1rem;border-radius:18px;padding:1rem 1.2rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);display:grid;gap:.7rem;animation:qin .4s}
+.fb.g{border-color:#7bd88f}.fb.b{border-color:#ff8d7a}
+.fb h3{font-size:1.25rem}.fb p{color:var(--m);margin:0}.fb .btn{justify-self:end}
+.wt{text-align:center}
+#sb h3,#eb h3{font-size:.95rem;color:var(--m);margin:1rem 0 .4rem}
+.tr,.pr{display:flex;align-items:center;gap:.7rem;padding:.35rem 0}
+.tr b{min-width:7.5rem}.tb{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.12);overflow:hidden}
+.tb i{display:block;height:100%;background:var(--c);border-radius:7px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.tr em,.pr em{font:700 .95rem var(--hd);font-style:normal;min-width:3.6rem;text-align:right;color:var(--gold)}
+.tr.me b{color:var(--gold)}
+.rk{width:1.6rem;height:1.6rem;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center;font:700 .8rem var(--hd);flex:none}
+.pr b{flex:1}.pr small{font-weight:700}
+.pt,.rn{position:fixed;z-index:50;pointer-events:none;font:800 1.5rem var(--hd);color:var(--gold)}
+.pt{animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(260deg);opacity:0}}
+.rn{top:-3rem;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+/* fin */
+.end{text-align:center;padding-top:1rem}
+.end h2{font-size:clamp(1.8rem,6vw,2.8rem);animation:qin .6s}
+.big{font:800 clamp(3rem,12vw,5.5rem)/1 var(--hd);color:var(--gold);margin:.4rem 0}
+.stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:1rem 0 1.4rem;color:var(--m)}
+.stats b{display:block;font:800 1.7rem var(--hd);color:var(--on)}
+#eb{text-align:left;max-width:560px;margin:0 auto}
+.rev{text-align:left;margin-top:1rem}
+.rev div{padding:.8rem 0;border-top:1px solid rgba(255,255,255,.14)}
+.rev b{color:var(--gold)}.rev small{color:var(--m);display:block}
+.row{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap;margin-top:1.4rem}
+@media(max-width:560px){.ans{grid-template-columns:1fr}.a{min-height:70px}.tr b{min-width:5.6rem}}
+.katex{font-size:1.08em}.q .katex{font-size:1.1em}.a span,.fb p,.rev small{overflow-wrap:anywhere}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#ttl span,.tag,.para,.menu3{opacity:1;transform:none}.sym{display:none}}
+</style>
+</head>
+<body>
+<div class="sym" id="sym" aria-hidden="true"></div>
+<div class="app">
+
+<section id="intro">
+<a class="back" id="tocl" href="index.html" hidden style="text-decoration:none;align-self:flex-start">‹ Retour à la classe</a>
+<div class="orb" aria-hidden="true">∑</div>
+<h1 id="ttl" aria-label="Math Arena"></h1>
+<p class="tag">Le duel de maths de la classe 1BAC SM</p>
+<p class="para">Ici, les maths deviennent un match. Choisis tes chapitres, affronte tes camarades chacun sur son téléphone ou son PC, et fais gagner ton équipe : chaque bonne réponse rapide rapporte des points, chaque série de réussites ajoute un bonus, et le score de l'équipe est la somme des scores de ses joueurs. Tu préfères t'entraîner tranquillement ? Joue en solo.</p>
+<div class="menu3">
+<button class="btn" id="b2" type="button">Créer une partie</button>
+<button class="btn o" id="b3" type="button">Rejoindre une partie</button>
+<button class="btn o" id="b1" type="button">Jouer en solo</button>
+</div>
+</section>
+
+<section id="home" hidden>
+<button class="back" data-b="1" type="button">‹ Retour</button>
+<h2 class="ptitle" id="ht2">Réglages</h2>
+<div class="box"><h3>Chapitres <button id="all" type="button">Tout sélectionner</button></h3><div class="chips" id="chs"></div></div>
+<div class="box"><h3>Nombre de questions</h3><div class="chips" id="cn"></div></div>
+<div class="box"><h3>Temps par question</h3><div class="chips" id="ct"></div></div>
+<div class="box" id="bsolo"><h3>Mode de jeu</h3><div class="chips" id="cm"></div></div>
+<div class="box" id="bk"><h3>Équipes (tirées au sort)</h3><div class="chips" id="ck"></div></div>
+<div class="box" id="bh"><h3>Et toi ?</h3><div class="chips" id="chp"></div></div>
+<div class="box"><h3>Sons</h3><div class="chips" id="cs"></div></div>
+<div class="go"><button class="btn" id="start" type="button">Jouer</button><p class="hint" id="hint"></p></div>
+</section>
+
+<section id="lobby" hidden>
+<h2 class="ptitle">Salle de jeu</h2>
+<p class="hint">Les élèves ouvrent le site, cliquent sur « Rejoindre une partie » et tapent ce code :</p>
+<div class="code" id="code">····</div>
+<div class="lk"><input class="in" id="lnk" readonly aria-label="Lien direct"><button class="btn o" id="cp" type="button">Copier le lien</button></div>
+<div class="box"><h3>Joueurs connectés <span id="pc"></span></h3><div class="chips" id="pl"></div></div>
+<div class="go"><button class="btn" id="launch" type="button">Lancer la partie</button><p class="hint" id="lh"></p></div>
+</section>
+
+<section id="join" hidden>
+<button class="back" data-b="1" type="button">‹ Retour</button>
+<h2 class="ptitle">Rejoindre une partie</h2>
+<div class="box"><label for="jn">Ton prénom</label><input class="in" id="jn" maxlength="14" autocomplete="given-name"><label for="jc">Code de la salle</label><input class="in cd" id="jc" maxlength="4" autocomplete="off"></div>
+<div class="go"><button class="btn" id="jgo" type="button">Rejoindre</button><p class="hint" id="jm"></p></div>
+</section>
+
+<section id="wait" hidden>
+<div class="orb" aria-hidden="true">π</div>
+<h2 id="wmsg">En attente…</h2>
+<div class="chips" id="wpl" style="justify-content:center;margin-top:1.2rem"></div>
+</section>
+
+<section id="game" hidden>
+<div class="hud"><span class="pill" id="hn"></span><span class="pill badge" id="ht" hidden></span><span class="pill hearts" id="hl"></span><button class="btn o" id="jk" type="button">50/50</button><span class="pill strk" id="hs"></span><span class="pill">Score <b id="hp">0</b></span></div>
+<div class="bar"><i id="tb"></i></div>
+<div class="q" id="q"></div>
+<div class="ans" id="ans"></div>
+<div class="st" id="st"></div>
+<div class="fb" id="fb" hidden></div>
+<div id="sb" hidden></div>
+</section>
+
+<section id="end" class="end" hidden>
+<h2>Terminé !</h2>
+<div id="me"><div class="big" id="fs">0</div><div class="stats"><div><b id="fa">0%</b>de réussite</div><div><b id="fk">0</b>meilleure série</div><div><b id="fc">0</b>bonnes réponses</div></div></div>
+<div id="eb" hidden></div>
+<div class="row" id="solobtn"><button class="btn" id="again" type="button">Rejouer</button><button class="btn o" id="back" type="button">Changer de chapitres</button></div>
+<div class="row" id="mpbtn" hidden><button class="btn" id="menu" type="button">Menu principal</button></div>
+<div class="rev" id="rev"></div>
+</section>
+
+</div>
+<script>
+const $=s=>document.querySelector(s);
+/* ======== BANQUE DE QUESTIONS ========
+   Format : [ "question", ["bonne réponse","faux 1","faux 2","faux 3"], "explication" ]
+   La bonne réponse est toujours en premier : le jeu mélange les choix tout seul.
+   Les maths s'écrivent en LaTeX entre $...$ (ex. $x^{2}+1$, $\frac{1}{2}$, $\sqrt{3}$). */
+const B={};const add=(c,l)=>B[c]=l;
+
+add("Logique",[
+["Négation de « $\\forall x\\in \\mathbb{R}, \\exists y\\in \\mathbb{R}, x+y=0$ » ?",["$\\exists x\\in \\mathbb{R}, \\forall y\\in \\mathbb{R}, x+y\\ne 0$","$\\forall x\\in \\mathbb{R}, \\exists y\\in \\mathbb{R}, x+y\\ne 0$","$\\exists x\\in \\mathbb{R}, \\exists y\\in \\mathbb{R}, x+y\\ne 0$","$\\forall x\\in \\mathbb{R}, \\forall y\\in \\mathbb{R}, x+y\\ne 0$"],"On change chaque quantificateur (on échange $\\forall$ et $\\exists )$ puis on nie la propriété finale."],
+["Pour montrer « $n^{2}$ pair $\\Rightarrow n$ pair » par contraposée, on montre :",["$n$ impair $\\Rightarrow n^{2}$ impair","$n$ pair $\\Rightarrow n^{2}$ pair","$n^{2}$ impair $\\Rightarrow n$ impair","$n^{2}$ pair $\\Rightarrow n$ impair"],"La contraposée de $P\\Rightarrow Q$ est non $Q \\Rightarrow$ non $P$."],
+["Quelle proposition est vraie ?",["$\\exists x\\in \\mathbb{R}, x^{2} < x$","$\\forall x\\in \\mathbb{R}, x^{2} \\ge x$","$\\forall x\\in \\mathbb{R}, x^{2} > 0$","$\\exists x\\in \\mathbb{R}, x^{2} < 0$"],"Pour $x = \\frac{1}{2} : x^{2} = \\frac{1}{4} < \\frac{1}{2}$. Les autres sont fausses $(x = 0$ ou $x = \\frac{1}{2}$ comme contre-exemples)."],
+["En prouvant par l'absurde que $\\sqrt{2}$ est irrationnel $(\\sqrt{2} = p/q$ irréductible), on aboutit à :",["$p$ et $q$ sont tous les deux pairs","$p$ et $q$ sont tous les deux impairs","$p = q$","$q = 0$"],"$p^{2} = 2q^{2}$ donne $p$ pair, puis $q$ pair : contradiction avec l'irréductibilité."],
+["Négation de « $\\forall \\varepsilon >0, \\exists N\\in \\mathbb{N}, \\forall n\\ge N, |u_{n}|<\\varepsilon$ » ?",["$\\exists \\varepsilon >0, \\forall N\\in \\mathbb{N}, \\exists n\\ge N, |u_{n}|\\ge \\varepsilon$","$\\forall \\varepsilon >0, \\exists N\\in \\mathbb{N}, \\exists n\\ge N, |u_{n}|\\ge \\varepsilon$","$\\exists \\varepsilon >0, \\exists N\\in \\mathbb{N}, \\forall n\\ge N, |u_{n}|\\ge \\varepsilon$","$\\exists \\varepsilon \\le 0, \\forall N\\in \\mathbb{N}, \\exists n\\ge N, |u_{n}|<\\varepsilon$"],"Les quantificateurs s'inversent, et « $<$ » devient « $\\ge$ »."],
+["L'implication $P \\Rightarrow Q$ est fausse seulement si :",["$P$ est vraie et $Q$ est fausse","$P$ est fausse et $Q$ est vraie","$P$ et $Q$ sont fausses","$P$ et $Q$ sont vraies"],"Une implication n'est fausse que dans ce seul cas."]]);
+
+add("Trigonométrie",[
+["$\\cos (\\pi /12) =$ ?",["$\\frac{\\sqrt{6}+\\sqrt{2}}{4}$","$\\frac{\\sqrt{6}-\\sqrt{2}}{4}$","$\\frac{\\sqrt{3}+1}{4}$","$\\sqrt{3}/2$"],"$\\cos (\\pi /4 - \\pi /6) = \\cos (\\pi /4)\\cos (\\pi /6) + \\sin (\\pi /4)\\sin (\\pi /6) = \\frac{\\sqrt{6}+\\sqrt{2}}{4}$."],
+["Solutions de $2\\cos x - 1 = 0$ dans $[0, 2\\pi [$ :",["$\\pi /3$ et $5\\pi /3$","$\\pi /6$ et $11\\pi /6$","$\\pi /3$ et $2\\pi /3$","$\\pi /6$ et $5\\pi /6$"],"$\\cos x = \\frac{1}{2} = \\cos (\\pi /3)$, donc $x = \\pm \\pi /3 + 2k\\pi$."],
+["$\\sin (3x) =$ ?",["$3\\sin x - 4\\sin ^{3}x$","$4\\sin ^{3}x - 3\\sin x$","$3\\sin x + 4\\sin ^{3}x$","$3\\sin x \\cos x$"],"$\\sin (2x+x) = \\sin 2x\\cdot \\cos x + \\cos 2x\\cdot \\sin x$, puis on simplifie."],
+["$\\tan (\\pi /8) =$ ?",["$\\sqrt{2} - 1$","$\\sqrt{2} + 1$","$\\frac{1}{2}$","$\\frac{\\sqrt{2}-1}{2}$"],"$\\tan (2a) = 2t/(1-t^{2})$ avec $2a = \\pi /4$ donne $t^{2} + 2t - 1 = 0$ et $t > 0$."],
+["$\\cos x + \\sqrt{3} \\sin x =$ ?",["$2\\cos (x - \\pi /3)$","$2\\cos (x + \\pi /3)$","$2\\sin (x - \\pi /3)$","$2\\cos (x - \\pi /6)$"],"$2\\cos (x-\\pi /3) = 2(\\cos x\\cdot \\frac{1}{2} + \\sin x\\cdot \\sqrt{3}/2) = \\cos x + \\sqrt{3} \\sin x$."],
+["Solutions de $\\sin x = \\sin (\\pi /5)$ dans $\\mathbb{R}$ :",["$\\pi /5 + 2k\\pi$ ou $4\\pi /5 + 2k\\pi$","$\\pi /5 + 2k\\pi$ ou $-\\pi /5 + 2k\\pi$","$\\pi /5 + k\\pi$","$\\pi /5 + 2k\\pi$ ou $6\\pi /5 + 2k\\pi$"],"$\\sin a = \\sin b \\Leftrightarrow a = b + 2k\\pi$ ou $a = \\pi - b + 2k\\pi$."]]);
+
+add("Suites",[
+["$u_{0} = 1$ et $u_{n+1} = 2u_{n} + 3$. Alors $u_{n} =$ ?",["$2^{n+2} - 3$","$2^{n+1} - 1$","$3\\cdot 2^{n} - 2$","$2^{n} + 3$"],"$v_{n} = u_{n} + 3$ est géométrique de raison $2$ et $v_{0} = 4$, donc $u_{n} = 4\\cdot 2^{n} - 3$."],
+["Suite géométrique de raison $\\frac{1}{2}$ et $u_{0} = 8$. Somme $u_{0} +$ … $+ u_{9} =$ ?",["$16 - \\frac{1}{64}$","$8 - \\frac{1}{64}$","$16 - \\frac{1}{1024}$","$16 - \\frac{1}{32}$"],"$S = 8\\cdot (1 - (\\frac{1}{2})^{10})/(\\frac{1}{2}) = 16(1 - \\frac{1}{1024}) = 16 - \\frac{1}{64}$."],
+["$u_{n} = \\frac{2n+1}{n+3}$. La suite est :",["croissante et majorée par $2$","décroissante","croissante et non majorée","non monotone"],"$u_{n+1} - u_{n} = 5/((n+4)(n+3)) > 0$ et $u_{n} = 2 - 5/(n+3) < 2$."],
+["Suite arithmétique avec $u_{3} = 7$ et $u_{8} = 22$. Alors $u_{20} =$ ?",["$58$","$61$","$55$","$62$"],"Raison $r = \\frac{22-7}{5} = 3, u_{0} = -2$, donc $u_{20} = -2 + 60 = 58$."],
+["$u_{0} = 0$ et $u_{n+1} = \\sqrt{u_{n} + 2}$. La limite est :",["$2$","$1$","$\\sqrt{2}$","$-1$"],"La limite $ℓ$ vérifie $ℓ^{2} = ℓ + 2$ avec $ℓ \\ge 0$, donc $ℓ = 2$."],
+["$\\sum k^{2}$ pour $k = 1$ à $n$ vaut :",["$n(n+1)\\frac{2n+1}{6}$","$n\\frac{n+1}{2}$","$n^{2}(n+1)^{2}/4$","$n(n+1)\\frac{n+2}{6}$"],"Vérification avec $n = 3 : 1+4+9 = 14 = 3\\cdot 4\\cdot \\frac{7}{6}$."]]);
+
+add("Dérivation",[
+["$f(x) = x/(x^{2}+1). f'(x) =$ ?",["$(1 - x^{2})/(x^{2}+1)^{2}$","$(1 + x^{2})/(x^{2}+1)^{2}$","$(x^{2} - 1)/(x^{2}+1)^{2}$","$1/(2x)$"],"$(u/v)' = (u'v - uv')/v^{2} = ((x^{2}+1) - 2x^{2})/(x^{2}+1)^{2}$."],
+["$f(x) = \\sqrt{x^{2}+1}. f'(x) =$ ?",["$x/\\sqrt{x^{2}+1}$","$1/(2\\sqrt{x^{2}+1})$","$2x/\\sqrt{x^{2}+1}$","$x\\sqrt{x^{2}+1}$"],"$(\\sqrt{u})' = u'/(2\\sqrt{u}) = 2x/(2\\sqrt{x^{2}+1})$."],
+["$f(x) = \\sin ^{2}x. f'(x) =$ ?",["$\\sin 2x$","$2\\sin x$","$\\cos ^{2}x$","$2\\cos ^{2}x$"],"$(u^{2})' = 2u'u = 2 \\sin x \\cos x = \\sin 2x$."],
+["Tangente à $f(x) = x^{3} - 3x + 1$ en $x = 2$ :",["$y = 9x - 15$","$y = 9x + 3$","$y = 3x - 3$","$y = 9x - 3$"],"$f(2) = 3$ et $f'(2) = 9$, donc $y = 9(x - 2) + 3$."],
+["$f(x) = x^{3} - 3x^{2}. f$ est décroissante sur :",["$[0, 2]$","$]-\\infty , 0]$","$[2, +\\infty [$","$\\mathbb{R}$"],"$f'(x) = 3x(x - 2) \\le 0$ sur $[0, 2]$."],
+["$\\lim x\\to 0$ de $\\sin (3x)/x =$ ?",["$3$","$1$","$0$","$+\\infty$"],"C'est le nombre dérivé de $x \\mapsto \\sin (3x)$ en $0$, soit $3\\cos (0) = 3$."]]);
+
+add("Limites",[
+["$\\lim x\\to +\\infty$ de $(\\sqrt{x^{2}+x} - x) =$ ?",["$\\frac{1}{2}$","$0$","$1$","$+\\infty$"],"Quantité conjuguée : $x/(\\sqrt{x^{2}+x}+x) \\to \\frac{1}{2}$."],
+["$\\lim x\\to 1$ de $\\frac{x^{3}-1}{x^{2}-1} =$ ?",["$\\frac{3}{2}$","$1$","$2$","$0$"],"$(x-1)(x^{2}+x+1)/((x-1)(x+1)) \\to \\frac{3}{2}$."],
+["$\\lim x\\to 0$ de $(1 - \\cos x)/x^{2} =$ ?",["$\\frac{1}{2}$","$1$","$0$","$2$"],"$1 - \\cos x = 2\\sin ^{2}(x/2)$, donc la limite vaut $2\\cdot (\\frac{1}{4}) = \\frac{1}{2}$."],
+["$\\lim x\\to +\\infty$ de $x\\cdot \\sin (1/x) =$ ?",["$1$","$0$","$+\\infty$","n'existe pas"],"On pose $t = 1/x \\to 0$ et $\\sin t / t \\to 1$."],
+["$\\lim x\\to 0^{+}$ de $x\\cdot E(1/x)$ (où $E$ est la partie entière) $=$ ?",["$1$","$0$","$+\\infty$","n'existe pas"],"$1/x - 1 < E(1/x) \\le 1/x$, donc $1 - x < x\\cdot E(1/x) \\le 1$ : théorème des gendarmes."],
+["$\\lim x\\to -\\infty$ de $(\\sqrt{x^{2}+1} + x) =$ ?",["$0$","$1$","$-\\infty$","$\\frac{1}{2}$"],"$\\sqrt{x^{2}+1} + x = 1/(\\sqrt{x^{2}+1} - x) \\to 0$ car le dénominateur tend vers $+\\infty$."]]);
+
+add("Produit scalaire",[
+["$AB = 3, AC = 4$ et l'angle en $A$ mesure $60^{\\circ}$. Que vaut $\\overrightarrow{AB}\\cdot \\overrightarrow{AC}$ ?",["$6$","$12$","$6\\sqrt{3}$","$7$"],"$AB\\cdot AC\\cdot \\cos 60^{\\circ} = 3\\times 4\\times \\frac{1}{2} = 6$."],
+["Théorème de la médiane $(I$ milieu de $[AB]) : MA^{2} + MB^{2} =$ ?",["$2MI^{2} + AB^{2}/2$","$2MI^{2} + AB^{2}$","$MI^{2} + AB^{2}/2$","$4MI^{2} + AB^{2}/2$"],"On développe avec $\\overrightarrow{MA} = \\overrightarrow{MI} + \\overrightarrow{IA}$ et $\\overrightarrow{MB} = \\overrightarrow{MI} + \\overrightarrow{IB}$, avec $\\overrightarrow{IB} = -\\overrightarrow{IA}$."],
+["L'ensemble des points $M$ tels que $\\overrightarrow{MA}\\cdot \\overrightarrow{MB} = 0$ est :",["le cercle de diamètre $[AB]$","la médiatrice de $[AB]$","la droite $(AB)$","le cercle de centre $A$ passant par $B$"],"$\\overrightarrow{MA}\\cdot \\overrightarrow{MB} = 0$ signifie que l'angle $AMB$ est droit (ou $M = A, M = B)$."],
+["$\\Vert u\\Vert = 2, \\Vert v\\Vert = 3, u\\cdot v = -3$. Alors $\\Vert u - v\\Vert =$ ?",["$\\sqrt{19}$","$\\sqrt{7}$","$\\sqrt{13}$","$5$"],"$\\Vert u - v\\Vert ^{2} = 4 + 9 - 2(-3) = 19$."],
+["Distance du point $(1, 2)$ à la droite $3x - 4y + 2 = 0$ :",["$\\frac{3}{5}$","$3$","$1$","$\\frac{5}{3}$"],"$|3 - 8 + 2| / \\sqrt{9+16} = \\frac{3}{5}$."],
+["Rayon du cercle $x^{2} + y^{2} - 2x + 4y - 4 = 0$ :",["$3$","$2$","$\\sqrt{5}$","$9$"],"$(x-1)^{2} + (y+2)^{2} = 9$, centre $(1, -2)$, rayon $3$."]]);
+
+add("Dénombrement",[
+["Nombre d'anagrammes du mot « ANASS » :",["$30$","$120$","$60$","$24$"],"$5!/(2!\\cdot 2!) = \\frac{120}{4} = 30$ (deux $A$ et deux $S$ identiques)."],
+["Urne : $5$ boules rouges et $4$ vertes. On tire $3$ boules simultanément. Combien de tirages contiennent au moins une verte ?",["$74$","$84$","$64$","$80$"],"Total $C(9,3) = 84$, moins les tirages tout rouge $C(5,3) = 10 : 74$."],
+["Nombres à $3$ chiffres distincts formés avec $1, 2, 3, 4, 5$ :",["$60$","$125$","$10$","$120$"],"$A(5,3) = 5\\times 4\\times 3 = 60$."],
+["$C(n, 2) = 45$. Alors $n =$ ?",["$10$","$9$","$11$","$12$"],"$n\\frac{n-1}{2} = 45$ donne $n^{2} - n - 90 = 0$, donc $n = 10$."],
+["$5$ personnes sur $5$ chaises alignées. Deux d'entre elles veulent être côte à côte. Combien de façons ?",["$48$","$24$","$96$","$120$"],"On colle les deux : $4$! placements $\\times 2$ ordres internes $= 48$."],
+["Nombre de parties (sous-ensembles) d'un ensemble à $6$ éléments :",["$64$","$36$","$720$","$32$"],"$\\sum C(6, k) = 2^{6} = 64$."]]);
+
+add("Ensembles et applications",[
+["$f : \\mathbb{R} \\to \\mathbb{R}, x \\mapsto x^{2}$. Cette application est :",["ni injective ni surjective","bijective","injective non surjective","surjective non injective"],"$f(-1) = f(1)$ donc pas injective, et $-1$ n'a aucun antécédent donc pas surjective."],
+["$f : \\mathbb{R} \\to \\mathbb{R}, x \\mapsto 2x + 1$ est bijective. Sa réciproque est :",["$f^{-1}(x) = \\frac{x - 1}{2}$","$f^{-1}(x) = \\frac{x + 1}{2}$","$f^{-1}(x) = 2x - 1$","$f^{-1}(x) = 1/(2x + 1)$"],"On résout $y = 2x + 1$ pour $x : x = \\frac{y - 1}{2}$."],
+["Nombre de parties de $E = {1, 2, 3}$ :",["$8$","$6$","$9$","$3$"],"Un ensemble à $n$ éléments possède $2^{n}$ parties : $2^{3} = 8$."],
+["Le complémentaire de $A \\cup B$ est :",["$A^{c} \\cap B^{c}$","$A^{c} \\cup B^{c}$","$A^{c} \\cap B$","$A \\cap B$"],"Lois de De Morgan : $(A \\cup B)^{c} = A^{c} \\cap B^{c}$."],
+["$f : \\mathbb{N} \\to \\mathbb{N}, n \\mapsto n + 1$ est :",["injective non surjective","bijective","surjective non injective","ni injective ni surjective"],"$0$ n'a pas d'antécédent dans $\\mathbb{N}$, mais $f(a) = f(b)$ entraîne $a = b$."],
+["Pour toute application $f$, on a toujours :",["$f(A \\cap B) \\subset f(A) \\cap f(B)$","$f(A \\cap B) = f(A) \\cap f(B)$","$f(A) \\cap f(B) \\subset f(A \\cap B)$","$f(A \\cup B) \\subset f(A) \\cap f(B)$"],"L'égalité n'est vraie que si $f$ est injective."]]);
+
+add("Généralités sur les fonctions",[
+["Ensemble de définition de $f(x) = \\sqrt{x - 1}/(x - 3)$ :",["$[1, 3[ \\cup ]3, +\\infty [$","$]1, +\\infty [$","$[1, +\\infty [$","$]1, 3[ \\cup ]3, +\\infty [$"],"Il faut $x - 1 \\ge 0$ et $x \\ne 3$."],
+["$f(x) = x^{3} + x$ est :",["impaire","paire","ni paire ni impaire","périodique"],"$f(-x) = -x^{3} - x = -f(x)$, et le domaine est symétrique."],
+["Période de $f(x) = \\cos (2x)$ :",["$\\pi$","$2\\pi$","$\\pi /2$","$4\\pi$"],"$\\cos (2(x + \\pi )) = \\cos (2x + 2\\pi ) = \\cos (2x)$."],
+["$f(x) = x + 1$ et $g(x) = x^{2}$. Alors $(g\\circ f)(x) =$ ?",["$(x + 1)^{2}$","$x^{2} + 1$","$x^{2} + x$","$x + 1$"],"$(g\\circ f)(x) = g(f(x)) = (x + 1)^{2}$."],
+["$f(x) = x^{2} - 4x + 3$ admet :",["un minimum égal à $-1$ en $x = 2$","un maximum égal à $-1$ en $x = 2$","un minimum égal à $3$ en $x = 0$","un minimum égal à $-1$ en $x = -2$"],"$f(x) = (x - 2)^{2} - 1$."],
+["La courbe d'une fonction paire est symétrique par rapport :",["à l'axe des ordonnées","à l'axe des abscisses","à l'origine","à la droite $y = x$"],"$f(-x) = f(x)$ : les points $M(x, y)$ et $M'(-x, y)$ sont symétriques par rapport à (Oy)."]]);
+
+add("Étude de fonctions",[
+["$f(x) = \\frac{2x + 1}{x - 1}$. Asymptotes :",["$x = 1$ et $y = 2$","$x = -1$ et $y = 2$","$x = 1$ et $y = 1$","$x = 2$ et $y = \\frac{1}{2}$"],"Dénominateur nul en $1$, et $\\lim f(x) = 2$ en $\\pm \\infty$."],
+["$f(x) = x + 1/x$ sur $]0, +\\infty [$ admet un minimum égal à :",["$2$, atteint en $x = 1$","$1$, atteint en $x = 1$","$2$, atteint en $x = 2$","$0$"],"$f'(x) = 1 - 1/x^{2}$ s'annule en $1$ et $f(1) = 2$."],
+["$f(x) = x^{3} - 3x$. Extremum local :",["maximum égal à $2$ en $x = -1$","minimum égal à $2$ en $x = -1$","maximum égal à $-2$ en $x = -1$","maximum égal à $2$ en $x = 1$"],"$f'(x) = 3(x^{2} - 1)$ change de $+$ à $-$ en $-1$, et $f(-1) = 2$."],
+["$f(x) = x^{3} - 3x + 1$. Point d'inflexion en :",["$x = 0$","$x = 1$","$x = -1$","il n'y en a pas"],"$f''(x) = 6x$ change de signe en $0$."],
+["$f(x) = x^{2}/(x - 1)$. Asymptote oblique :",["$y = x + 1$","$y = x$","$y = x - 1$","$y = 2x + 1$"],"$x^{2}/(x - 1) = x + 1 + 1/(x - 1)$."],
+["Nombre de solutions réelles de $x^{3} - 3x + 1 = 0$ :",["$3$","$1$","$2$","$0$"],"$f(-2) < 0, f(-1) > 0, f(1) < 0, f(2) > 0$ : trois changements de signe."]]);
+
+add("Barycentre",[
+["$G$ barycentre de $(A, 2)$ et $(B, 3)$. Alors $\\overrightarrow{AG} =$ ?",["$(\\frac{3}{5})\\cdot \\overrightarrow{AB}$","$(\\frac{2}{5})\\cdot \\overrightarrow{AB}$","$(\\frac{2}{3})\\cdot \\overrightarrow{AB}$","$(\\frac{3}{2})\\cdot \\overrightarrow{AB}$"],"$\\overrightarrow{AG} = (\\beta /(\\alpha +\\beta ))\\cdot \\overrightarrow{AB} = \\frac{3}{5} \\overrightarrow{AB}$."],
+["$G$ barycentre de $(A, \\alpha )$ et $(B, \\beta )$ avec $\\alpha + \\beta \\ne 0$. Pour tout point $M$ :",["$\\alpha \\cdot \\overrightarrow{MA} + \\beta \\cdot \\overrightarrow{MB} = (\\alpha + \\beta )\\cdot \\overrightarrow{MG}$","$\\alpha \\cdot \\overrightarrow{MA} + \\beta \\cdot \\overrightarrow{MB} = \\overrightarrow{MG}$","$\\alpha \\cdot \\overrightarrow{MA} - \\beta \\cdot \\overrightarrow{MB} = (\\alpha - \\beta )\\cdot \\overrightarrow{MG}$","$\\overrightarrow{MA} + \\overrightarrow{MB} = 2\\cdot \\overrightarrow{MG}$"],"C'est la propriété caractéristique du barycentre."],
+["$A(1, 2), B(5, -2)$ et $G$ barycentre de $(A, 3), (B, 1)$. Alors $G a$ pour coordonnées :",["$(2, 1)$","$(3, 0)$","$(4, -1)$","$(1,5 ; 1,5)$"],"$x = \\frac{3\\cdot 1 + 5}{4} = 2$ et $y = \\frac{3\\cdot 2 - 2}{4} = 1$."],
+["Dans $ABC, G$ est le centre de gravité et $I$ le milieu de $[BC]$. Alors $\\overrightarrow{AG} =$ ?",["$(\\frac{2}{3})\\cdot \\overrightarrow{AI}$","$(\\frac{1}{3})\\cdot \\overrightarrow{AI}$","$(\\frac{1}{2})\\cdot \\overrightarrow{AI}$","$(\\frac{3}{4})\\cdot \\overrightarrow{AI}$"],"$G$ barycentre de $(A,1),(B,1),(C,1)$ donc de $(A,1),(I,2)$."],
+["$I$ milieu de $[AB], AB = 6$. L'ensemble des points $M$ tels que $\\Vert \\overrightarrow{MA} + \\overrightarrow{MB}\\Vert = 4$ est :",["le cercle de centre $I$ et de rayon $2$","le cercle de centre $I$ et de rayon $4$","une droite","le cercle de centre $A$ et de rayon $2$"],"$\\overrightarrow{MA} + \\overrightarrow{MB} = 2\\cdot \\overrightarrow{MI}$, donc $MI = 2$."],
+["Le barycentre de $(A, \\alpha )$ et $(B, \\beta )$ existe si et seulement si :",["$\\alpha + \\beta \\ne 0$","$\\alpha \\ne \\beta$","$\\alpha > 0$ et $\\beta > 0$","$\\alpha \\cdot \\beta \\ne 0$"],"Il faut que la somme des coefficients soit non nulle."]]);
+
+add("Rotation",[
+["Repère orthonormé direct. L'image de $A(3, 1)$ par la rotation de centre $O$ et d'angle $\\pi /2$ est :",["$(-1, 3)$","$(1, -3)$","$(3, -1)$","$(-3, 1)$"],"$(x, y) \\mapsto (-y, x)$ pour un quart de tour direct."],
+["Composée de deux rotations de même centre $O$ et d'angles $\\theta$ et $\\theta '$ :",["rotation de centre $O$ et d'angle $\\theta + \\theta '$","rotation d'angle $\\theta \\cdot \\theta '$","une translation","une symétrie axiale"],"Les angles s'additionnent."],
+["Une rotation conserve :",["les distances et les angles orientés","les distances seulement","les aires mais pas les distances","les directions des droites"],"C'est un déplacement : isométrie directe."],
+["$r$ est la rotation de centre $O$ et d'angle $2\\pi /3$. Que vaut $r\\circ r\\circ r$ ?",["l'identité","la rotation d'angle $\\pi$","une symétrie centrale","la rotation d'angle $2\\pi /3$"],"Angle total $= 3 \\times 2\\pi /3 = 2\\pi$."],
+["$ABC$ est équilatéral direct. La rotation qui envoie $B$ sur $C$ est celle de :",["centre $A$ et d'angle $\\pi /3$","centre $A$ et d'angle $-\\pi /3$","centre $B$ et d'angle $\\pi /3$","centre $C$ et d'angle $2\\pi /3$"],"$AB = AC$ et $(\\overrightarrow{AB}, \\overrightarrow{AC}) = \\pi /3$."],
+["La symétrie centrale de centre $O$ est la rotation de centre $O$ et d'angle :",["$\\pi$","$\\pi /2$","$0$","$3\\pi /2$"],"Un demi-tour."]]);
+
+add("Géométrie dans l'espace",[
+["Combien de plans passent par trois points non alignés ?",["un seul","aucun","deux","une infinité"],"Trois points non alignés déterminent un unique plan."],
+["Deux plans de l'espace non parallèles se coupent suivant :",["une droite","un point","un plan","l'ensemble vide"],"Leur intersection est une droite."],
+["Repère orthonormé. $A(1, 2, 3)$ et $B(3, 0, 2). AB =$ ?",["$3$","$9$","$\\sqrt{5}$","$2\\sqrt{2}$"],"$AB^{2} = 4 + 4 + 1 = 9$."],
+["$u(1, 2, -1)$ et $v(2, -1, 0)$ sont :",["orthogonaux","colinéaires","égaux","opposés"],"$u\\cdot v = 2 - 2 + 0 = 0$."],
+["Plan d'équation $x + 2y - z = 0$. Un vecteur normal est :",["$(1, 2, -1)$","$(1, 2, 1)$","$(-1, 2, 1)$","$(2, 1, -1)$"],"Les coefficients de $x, y, z$ donnent un vecteur normal."],
+["Une droite orthogonale à deux droites sécantes d'un plan $P$ est :",["orthogonale au plan $P$","parallèle à $P$","incluse dans $P$","sécante à $P$ sans lui être orthogonale"],"C'est le critère d'orthogonalité droite-plan."]]);
+
+add("Arithmétique dans ℤ",[
+["$\\operatorname{PGCD}(84, 36) =$ ?",["$12$","$6$","$18$","$4$"],"$84 = 2\\times 36 + 12$ et $36 = 3\\times 12$ : le dernier reste non nul est $12$."],
+["Reste de la division de $2^{10}$ par $7$ :",["$2$","$1$","$4$","$3$"],"$2^{3} = 8 \\equiv 1$ (mod $7)$, donc $2^{10} = (2^{3})^{3}\\cdot 2 \\equiv 2$."],
+["$\\operatorname{PGCD}(n, n + 1)$ pour tout $n \\in \\mathbb{N}*$ :",["$1$","$n$","$2$","$n + 1$"],"Un diviseur commun divise $(n + 1) - n = 1$."],
+["Nombre de diviseurs positifs de $36$ :",["$9$","$8$","$6$","$12$"],"$36 = 2^{2}\\cdot 3^{2}$, donc $(2+1)(2+1) = 9$."],
+["Pour tout entier $n, n(n + 1)$ est :",["pair","impair","multiple de $3$","multiple de $4$"],"L'un des deux entiers consécutifs est pair."],
+["Reste de la division de $7^{2026}$ par $5$ :",["$4$","$1$","$2$","$3$"],"$7 \\equiv 2$ (mod $5), 2^{4} \\equiv 1$, et $2026 = 4\\times 506 + 2$, donc $2^{2} = 4$."]]);
+
+add("Équations et inéquations",[
+["Solutions de $x^{2} - 5x + 6 \\le 0$ :",["$[2, 3]$","$]-\\infty , 2] \\cup [3, +\\infty [$","$]2, 3[$","$[-3, -2]$"],"$(x - 2)(x - 3) \\le 0$ entre les racines."],
+["$2x^{2} - 6x + 4 = 0$. Somme et produit des racines :",["somme $3$, produit $2$","somme $6$, produit $4$","somme $-3$, produit $2$","somme $3$, produit $4$"],"$S = -b/a = 3$ et $P = c/a = 2$."],
+["$x^{2} - 2mx + m + 2 = 0$ admet une racine double si :",["$m = -1$ ou $m = 2$","$m = 1$ ou $m = -2$","$m = 2$ seulement","$m = -2$ ou $m = -1$"],"Δ $= 4(m^{2} - m - 2) = 4(m - 2)(m + 1) = 0$."],
+["Solutions de $|2x - 1| < 3$ :",["$]-1, 2[$","$]-2, 4[$","$]-1, 1[$","$]-\\infty , -1[ \\cup ]2, +\\infty [$"],"$-3 < 2x - 1 < 3$ donne $-1 < x < 2$."],
+["Solution de $\\sqrt{x + 2} = x$ :",["$x = 2$","$x = -1$","$x = 2$ et $x = -1$","aucune solution"],"$x^{2} - x - 2 = 0$ donne $x = 2$ ou $x = -1$, mais $x$ doit être $\\ge 0$."],
+["$x + y = 5$ et xy $= 6$. Les couples solutions sont :",["$(2, 3)$ et $(3, 2)$","$(1, 6)$ et $(6, 1)$","$(-2, -3)$","$(4, 1)$ et $(1, 4)$"],"$x$ et $y$ sont les racines de $t^{2} - 5t + 6 = 0$."]]);
+
+
+/* ======== JEU ======== */
+const SH=['▲','◆','●','■'];
+const TEAMS=[['Les Vecteurs','#e21b3c'],['Les Limites','#1368ce'],['Les Dérivées','#d89e00'],['Les Suites','#26890c']];
+const SYM=['∑','π','∫','√','∞','Δ','θ','≈','x²','∂','±','÷','λ','φ','Ω','f(x)','sin','lim','ℝ','∀','∃','%','e','n!'];
+const RED=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let MP=0,M=0,lives=3,jkOk=true,snd=1,rec=0,sel=new Set(Object.keys(B)),N=10,T=20,KT=2,HP=1;
+let Q=[],i=0,score=0,streak=0,best=0,right=0,t0=0,tm=null,locked=false,missed=[],peer=null,H=null,conn=null,my={team:-1},ended=false;
+try{rec=+localStorage.getItem('mq_rec')||0}catch(e){}
+const shuf=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+function rm(el){try{if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$',right:'$',display:false}],throwOnError:false})}catch(e){}}
+addEventListener('load',()=>{['#q','#ans','#fb','#rev','#sb'].forEach(s=>rm($(s)))});
+let ac;function beep(f,d,t){if(!snd)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+const good=()=>{beep(660,.12);setTimeout(()=>beep(880,.15),110)},bad=()=>beep(180,.3,'sawtooth');
+function show(id){['intro','home','lobby','join','wait','game','end'].forEach(s=>$('#'+s).hidden=s!==id);scrollTo(0,0)}
+
+/* --- entrée animée --- */
+(function(){const el=$('#sym');for(let k=0;k<26;k++){const s=document.createElement('span');s.textContent=SYM[k%SYM.length];s.style.cssText='left:'+Math.random()*100+'%;font-size:'+(1.2+Math.random()*2.6)+'rem;animation-duration:'+(9+Math.random()*12)+'s;animation-delay:-'+Math.random()*20+'s;--r:'+Math.round(Math.random()*60-30)+'deg';el.append(s)}
+$('#ttl').innerHTML='MATH ARENA'.split('').map((c,k)=>c===' '?'<i class="sp"></i>':'<span style="--i:'+k+'">'+c+'</span>').join('')})();
+function burst(x,y,n){if(RED)return;n=n||14;for(let k=0;k<n;k++){const s=document.createElement('span');s.className='pt';s.textContent=SYM[k%10];const a=Math.random()*6.28,d=60+Math.random()*110;s.style.cssText='left:'+x+'px;top:'+y+'px;--dx:'+Math.cos(a)*d+'px;--dy:'+Math.sin(a)*d+'px';document.body.append(s);setTimeout(()=>s.remove(),1100)}}
+function rain(){if(RED)return;for(let k=0;k<46;k++){const s=document.createElement('span');s.className='rn';s.textContent=SYM[k%SYM.length];s.style.cssText='left:'+Math.random()*100+'%;animation-duration:'+(2.5+Math.random()*2.5)+'s;animation-delay:'+Math.random()*1.5+'s';document.body.append(s);setTimeout(()=>s.remove(),7500)}}
+
+/* --- réglages --- */
+function pool(){return Object.keys(B).filter(c=>sel.has(c)).flatMap(c=>B[c].map(x=>({c,q:x[0],o:x[1],e:x[2]})))}
+function chips(id,vals,get,set,fmt){const el=$(id);el.innerHTML='';vals.forEach(v=>{const b=document.createElement('button');b.type='button';b.className='chip';b.innerHTML=fmt(v);b.setAttribute('aria-pressed',get(v));b.onclick=()=>{set(v);home()};el.append(b)})}
+function home(){
+chips('#chs',Object.keys(B),c=>sel.has(c),c=>sel.has(c)?sel.delete(c):sel.add(c),c=>c+'<small>'+B[c].length+'</small>');
+chips('#cn',[5,10,20,0],v=>N===v,v=>N=v,v=>v?v+' questions':'Toutes');
+chips('#ct',[10,20,30],v=>T===v,v=>T=v,v=>v+' s');
+chips('#cs',[1,0],v=>snd===v,v=>snd=v,v=>v?'Activés':'Coupés');
+$('#bsolo').hidden=MP!==0;$('#bk').hidden=$('#bh').hidden=MP!==1;
+if(MP===0)chips('#cm',[0,1],v=>M===v,v=>M=v,v=>v?'Survie (3 vies)':'Classique');
+if(MP===1){chips('#ck',[2,3,4,0],v=>KT===v,v=>KT=v,v=>v?v+' équipes':'Chacun pour soi');chips('#chp',[1,0],v=>HP===v,v=>HP=v,v=>v?'Je joue aussi':"J'anime seulement")}
+$('#ht2').textContent=MP===1?'Créer une partie':'Partie solo';
+const n=pool().length;$('#start').disabled=!n;$('#start').textContent=MP===1?'Créer la salle':'Jouer';
+$('#hint').textContent=n?n+' questions disponibles.'+(MP===0&&rec?' Record : '+rec+' pts.':''):'Choisis au moins un chapitre.'}
+$('#all').onclick=()=>{sel=sel.size===Object.keys(B).length?new Set():new Set(Object.keys(B));home()};
+$('#b1').onclick=()=>{MP=0;home();show('home')};
+$('#b2').onclick=()=>{MP=1;home();show('home')};
+$('#b3').onclick=()=>{MP=2;show('join')};
+document.querySelectorAll('.back').forEach(b=>b.onclick=()=>{MP=0;show('intro')});
+$('#start').onclick=()=>MP===1?hostCreate():start();
+
+/* --- affichage commun d'une question --- */
+function hud(){$('#jk').hidden=$('#hl').hidden=MP!==0;$('#ht').hidden=!(MP&&my.team>=0)}
+function setBadge(t){my.team=t;const b=$('#ht');if(t>=0){b.textContent=TEAMS[t][0];b.style.background=TEAMS[t][1]}}
+function runBar(sec,done){clearInterval(tm);t0=performance.now();const b=$('#tb');const f=()=>{const el=(performance.now()-t0)/1000,r=Math.max(0,1-el/sec);b.style.transform='scaleX('+r+')';b.classList.toggle('low',r<.25);if(el>=sec){clearInterval(tm);done()}};tm=setInterval(f,100);f()}
+function paint(q,n,tot){hud();$('#hn').textContent=n+' / '+tot;$('#q').innerHTML='<div><small>'+q.c+'</small>'+q.q+'</div>';
+const a=$('#ans');a.className='ans';a.innerHTML='';q.o.forEach((o,k)=>{const b=document.createElement('button');b.type='button';b.className='a';b.style.setProperty('--n',k);b.innerHTML='<em>'+SH[k]+'</em><span>'+o.t+'</span>';b.onclick=()=>choose(k);a.append(b)});
+$('#fb').hidden=$('#sb').hidden=true;$('#st').textContent='';rm($('#q'));rm($('#ans'))}
+function mark(oi,k){const a=$('#ans');a.classList.remove('picked');a.classList.add('done');[...a.children].forEach((b,j)=>{b.classList.remove('sel');if(j===oi)b.classList.add('ok');else if(j===k)b.classList.add('no')});
+if(k===oi&&a.children[oi]){const r=a.children[oi].getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2)}}
+function choose(k){if(locked)return;if(MP===0)return pick(k);locked=true;const a=$('#ans');a.classList.add('picked');a.children[k].classList.add('sel');
+if(MP===1){if(H.play)hAns('H0',H.i,k)}else{$('#st').textContent='Réponse envoyée ✓ En attente des autres…';conn.send({t:'ans',i,k})}}
+addEventListener('keydown',e=>{if($('#game').hidden)return;if('1234'.includes(e.key)){const b=$('#ans').children[+e.key-1];if(b&&!locked)b.click()}else if(e.key==='5'&&MP===0&&!locked)$('#jk').click();else if(e.key==='Enter'){const n=$('#nx');if(n&&!$('#fb').hidden){e.preventDefault();n.click()}}});
+
+/* --- solo --- */
+function mkQ(){const p=shuf(pool());return(N?p.slice(0,N):p).map(x=>({...x,o:shuf(x.o.map((t,k)=>({t,ok:k===0})))}))}
+function start(){MP=0;my.team=-1;Q=mkQ();i=0;score=0;streak=0;best=0;right=0;missed=[];lives=3;jkOk=true;show('game');ask()}
+function ask(){locked=false;const q=Q[i];$('#hs').textContent=streak>1?'🔥 série '+streak:'';$('#hp').textContent=score;$('#hl').textContent=M?'❤'.repeat(lives)+'🖤'.repeat(3-lives):'';$('#jk').disabled=!jkOk;paint(q,i+1,Q.length);runBar(T,()=>pick(-1))}
+function pick(k){if(locked)return;locked=true;clearInterval(tm);const q=Q[i],el=Math.min(T,(performance.now()-t0)/1000),oi=q.o.findIndex(o=>o.ok),ok=k===oi;let gain=0;
+if(ok){streak++;best=Math.max(best,streak);right++;gain=Math.round(1000*(1-(el/T)/2))+Math.min(streak-1,5)*100;score+=gain;good()}else{streak=0;missed.push(q);if(M)lives--;bad()}
+$('#hp').textContent=score;$('#hs').textContent=streak>1?'🔥 série '+streak:'';$('#hl').textContent=M?'❤'.repeat(Math.max(lives,0))+'🖤'.repeat(3-Math.max(lives,0)):'';
+mark(oi,k);const f=$('#fb');f.className='fb '+(ok?'g':'b');const last=!(i+1<Q.length&&!(M&&lives<=0));
+f.innerHTML='<h3>'+(ok?'Bravo ! +'+gain+' points':(k<0?'Temps écoulé':'Raté'))+'</h3><p>'+q.e+'</p><button class="btn" id="nx" type="button">'+(last?'Voir mon score':'Suivante ›')+'</button>';f.hidden=false;rm(f);$('#nx').onclick=()=>{if(last)fin();else{i++;ask()}};$('#nx').focus()}
+$('#jk').onclick=()=>{if(locked||!jkOk||MP)return;jkOk=false;$('#jk').disabled=true;const q=Q[i];shuf(q.o.map((o,k)=>k).filter(k=>!q.o[k].ok)).slice(0,2).forEach(k=>{const b=$('#ans').children[k];b.style.visibility='hidden';b.disabled=true})};
+function fin(){show('end');const nr=score>rec;if(nr){rec=score;try{localStorage.setItem('mq_rec',rec)}catch(e){}}
+$('#end h2').textContent=M&&lives<=0?'Plus de vies !':(nr&&score>0?'Nouveau record !':'Terminé !');
+$('#me').hidden=false;$('#eb').hidden=true;$('#solobtn').hidden=false;$('#mpbtn').hidden=true;
+$('#fs').textContent=score;$('#fa').textContent=Math.round(100*right/Q.length)+'%';$('#fk').textContent=best;$('#fc').textContent=right+' / '+Q.length;
+$('#rev').innerHTML=missed.length?'<h3>À revoir</h3>'+missed.map(q=>'<div><b>'+q.q+'</b><small>Bonne réponse : '+q.o.find(o=>o.ok).t+'</small><small>'+q.e+'</small></div>').join(''):'<h3>Sans faute, bravo !</h3>';rm($('#rev'));beep(nr?880:440,.4);if(nr||!missed.length)rain()}
+$('#again').onclick=start;$('#back').onclick=()=>{show('home');home()};$('#menu').onclick=()=>location.reload();
+
+/* --- tableau des scores --- */
+function renderBoard(b,el){let h='';
+if(b.tm.length){const mx=Math.max(1,...b.tm.map(t=>t.s));h+='<h3>Équipes</h3>'+b.tm.map((t,r)=>'<div class="tr'+(t.i===my.team?' me':'')+'"><span class="rk">'+(r+1)+'</span><b>'+esc(t.n)+'</b><div class="tb"><i style="--c:'+t.c+';width:0" data-w="'+Math.round(100*t.s/mx)+'"></i></div><em>'+t.s+'</em></div>').join('')}
+h+='<h3>Joueurs</h3>'+b.pl.map((p,r)=>'<div class="pr"><span class="rk">'+(r+1)+'</span><b>'+esc(p.n)+'</b>'+(p.t>=0?'<small style="color:'+TEAMS[p.t][1]+'">'+TEAMS[p.t][0]+'</small>':'')+'<em>'+p.s+'</em></div>').join('');
+el.innerHTML=h;el.hidden=false;requestAnimationFrame(()=>requestAnimationFrame(()=>el.querySelectorAll('.tb i').forEach(x=>x.style.width=x.dataset.w+'%')))}
+function showRes(m,host){clearInterval(tm);locked=true;mark(m.ok,m.k);const me=!m.viewer,ok=m.k===m.ok;
+if(me){$('#hp').textContent=m.s;$('#hs').textContent=m.st>1?'🔥 série '+m.st:'';ok?good():bad()}
+$('#st').textContent='';const f=$('#fb');f.className='fb '+(me?(ok?'g':'b'):'');
+f.innerHTML='<h3>'+(me?(ok?'Bravo ! +'+m.g+' points':(m.k<0?'Temps écoulé':'Raté')):'Voici la bonne réponse')+'</h3><p>'+m.e+'</p>'+(host?'<button class="btn" id="nx" type="button">'+(m.last?'Voir le podium':'Question suivante ›')+'</button>':'<p class="wt">'+(m.last?'Résultats dans un instant…':"En attente de l'hôte…")+'</p>');
+f.hidden=false;rm(f);renderBoard(m.bd,$('#sb'));if(host){$('#nx').onclick=sendQ;$('#nx').focus()}}
+function showEnd(m){clearInterval(tm);show('end');const w=m.bd.tm.length?m.bd.tm[0].n:(m.bd.pl[0]?m.bd.pl[0].n:'');$('#end h2').textContent='🏆 '+w+' gagne !';
+$('#me').hidden=!!m.viewer;$('#fs').textContent=m.s;$('#fa').textContent=Math.round(100*m.r/m.n)+'%';$('#fk').textContent=m.b;$('#fc').textContent=m.r+' / '+m.n;
+$('#solobtn').hidden=true;$('#mpbtn').hidden=false;$('#rev').innerHTML='';renderBoard(m.bd,$('#eb'));good();rain()}
+
+/* --- hôte --- */
+const rc=()=>Array.from({length:4},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*31)]).join('');
+function needPeer(){if(typeof Peer==='undefined'){alert("Impossible de charger PeerJS. Vérifie ta connexion internet puis recharge la page.");return false}return true}
+const exp=()=>Object.values(H.P).filter(p=>!p.off).length,cnt=()=>Object.values(H.P).filter(p=>!p.off&&p.a).length;
+function hostCreate(){if(!needPeer())return;const code=rc();H={code,P:{},conns:{},K:KT,play:HP,i:-1,open:false,started:false};ended=false;
+peer=new Peer('mqarena-'+code);
+peer.on('error',e=>{if(e.type==='unavailable-id')return hostCreate();alert('Erreur de connexion : '+e.type)});
+peer.on('open',()=>{if(HP)H.P.H0=mkP('Hôte');$('#code').textContent=code;$('#lnk').value=location.href.split('?')[0].split('#')[0]+'?room='+code;lobbyUp();show('lobby')});
+peer.on('connection',c=>{c.on('data',d=>hData(c,d));c.on('close',()=>{const p=H.P[c.peer];if(!p)return;if(H.started){p.off=true;if(H.open)chk()}else{delete H.P[c.peer];delete H.conns[c.peer];lobbyUp()}})})}
+const mkP=n=>({n,team:-1,s:0,st:0,b:0,r:0,a:null,g:0,off:false});
+function bc(m){Object.values(H.conns).forEach(c=>c.open&&c.send(m))}
+function lobbyUp(){const ns=Object.values(H.P).map(p=>p.n);$('#pl').innerHTML=ns.map(n=>'<span class="chip">'+esc(n)+'</span>').join('');$('#pc').textContent='('+ns.length+')';$('#launch').disabled=!ns.length;
+$('#lh').textContent=H.K?(ns.length?ns.length+' joueur(s) · '+Math.min(H.K,ns.length)+' équipe(s) tirée(s) au sort au lancement.':'En attente de joueurs…'):'Chacun pour soi.';bc({t:'lobby',n:ns})}
+function hData(c,d){if(!d||typeof d!=='object')return;
+if(d.t==='join'){if(H.started){c.send({t:'err',m:'La partie a déjà commencé.'});return}
+const names=Object.values(H.P).map(p=>p.n);const b=String(d.n||'Joueur').replace(/[<>&"]/g,'').trim().slice(0,14)||'Joueur';let n=b,x=2;while(names.includes(n))n=b+x++;
+H.P[c.peer]=mkP(n);H.conns[c.peer]=c;c.send({t:'ok',n});lobbyUp()}
+else if(d.t==='ans')hAns(c.peer,+d.i,+d.k)}
+$('#cp').onclick=()=>{try{navigator.clipboard.writeText($('#lnk').value);$('#cp').textContent='Copié ✓'}catch(e){$('#lnk').select()}};
+$('#launch').onclick=()=>{const ids=Object.keys(H.P);if(!ids.length)return;const K=Math.min(H.K,ids.length);H.K=K;
+shuf(ids).forEach((id,k)=>H.P[id].team=K?k%K:-1);Q=mkQ();H.started=true;H.i=-1;
+ids.forEach(id=>{const c=H.conns[id];if(c&&c.open)c.send({t:'start',team:H.P[id].team,K,n:Q.length})});
+setBadge(H.P.H0?H.P.H0.team:-1);$('#wmsg').textContent=H.P.H0&&H.P.H0.team>=0?'Tu es dans '+TEAMS[H.P.H0.team][0]+' ! La partie commence…':'La partie commence…';$('#wpl').innerHTML='';show('wait');setTimeout(sendQ,2500)};
+function sendQ(){H.i++;i=H.i;if(H.i>=Q.length)return endMP();const q=H.cur=Q[H.i];Object.values(H.P).forEach(p=>p.a=null);H.open=true;H.sent=performance.now();
+bc({t:'q',i:H.i,n:Q.length,c:q.c,q:q.q,o:q.o.map(o=>o.t),T});
+show('game');locked=!H.play;paint(q,H.i+1,Q.length);$('#ans').classList.toggle('view',!H.play);$('#hp').textContent=H.P.H0?H.P.H0.s:'—';$('#hs').textContent=H.P.H0&&H.P.H0.st>1?'🔥 série '+H.P.H0.st:'';
+$('#st').textContent='0 / '+exp()+' ont répondu';runBar(T,reveal)}
+function hAns(id,qi,k){const p=H.P[id];if(!H.open||qi!==H.i||!p||p.a||p.off)return;p.a={k,ok:!!(H.cur.o[k]&&H.cur.o[k].ok),el:Math.min(T,(performance.now()-H.sent)/1000)};$('#st').textContent=cnt()+' / '+exp()+' ont répondu';chk()}
+function chk(){if(H.open&&cnt()>=exp()){clearInterval(tm);setTimeout(reveal,350)}}
+function board(){const ps=Object.values(H.P),tm=[];for(let t=0;t<H.K;t++){const m=ps.filter(p=>p.team===t);tm.push({i:t,n:TEAMS[t][0],c:TEAMS[t][1],s:m.reduce((a,p)=>a+p.s,0),m:m.length})}
+tm.sort((a,b)=>b.s-a.s);return{tm,pl:ps.slice().sort((a,b)=>b.s-a.s).slice(0,8).map(p=>({n:p.n,s:p.s,t:p.team}))}}
+function reveal(){if(!H.open)return;H.open=false;clearInterval(tm);const q=H.cur,oi=q.o.findIndex(o=>o.ok);
+Object.values(H.P).forEach(p=>{const a=p.a;if(a&&a.ok){p.st++;p.b=Math.max(p.b,p.st);p.r++;p.g=Math.round(1000*(1-(a.el/T)/2))+Math.min(p.st-1,5)*100;p.s+=p.g}else{p.st=0;p.g=0}});
+const bd=board(),last=H.i+1>=Q.length;
+Object.keys(H.P).forEach(id=>{const p=H.P[id],m={t:'r',ok:oi,k:p.a?p.a.k:-1,g:p.g,s:p.s,st:p.st,e:q.e,bd,last};if(id==='H0')showRes(m,1);else{const c=H.conns[id];if(c&&c.open)c.send(m)}});
+if(!H.P.H0)showRes({ok:oi,k:-1,g:0,s:0,st:0,e:q.e,bd,last,viewer:1},1)}
+function endMP(){ended=true;const bd=board();Object.keys(H.P).forEach(id=>{const p=H.P[id],m={t:'end',bd,s:p.s,r:p.r,b:p.b,n:Q.length};if(id==='H0')showEnd(m);else{const c=H.conns[id];if(c&&c.open)c.send(m)}});if(!H.P.H0)showEnd({bd,s:0,r:0,b:0,n:Q.length,viewer:1})}
+
+/* --- joueur --- */
+$('#jgo').onclick=()=>{if(!needPeer())return;const n=$('#jn').value.trim(),c=$('#jc').value.trim().toUpperCase();
+if(!n||c.length!==4){$('#jm').textContent='Entre ton prénom et le code à 4 caractères.';return}
+$('#jm').textContent='Connexion…';$('#jgo').disabled=true;MP=2;ended=false;my.team=-1;
+const fail=m=>{$('#jm').textContent=m;$('#jgo').disabled=false},to=setTimeout(()=>fail('Salle introuvable ou connexion impossible. Vérifie le code.'),12000);
+peer=new Peer();peer.on('error',e=>{clearTimeout(to);fail(e.type==='peer-unavailable'?'Salle introuvable. Vérifie le code.':'Erreur : '+e.type)});
+peer.on('open',()=>{conn=peer.connect('mqarena-'+c,{reliable:true});conn.on('open',()=>{clearTimeout(to);conn.send({t:'join',n})});conn.on('data',cData);conn.on('close',()=>{if(!ended){clearInterval(tm);alert("Connexion perdue avec l'hôte.");location.reload()}})})};
+function cData(d){if(!d)return;switch(d.t){
+case 'err':$('#jm').textContent=d.m;$('#jgo').disabled=false;show('join');break;
+case 'ok':$('#wmsg').textContent='Connecté, '+d.n+' ! En attente du lancement…';show('wait');break;
+case 'lobby':$('#wpl').innerHTML=d.n.map(x=>'<span class="chip">'+esc(x)+'</span>').join('');break;
+case 'start':setBadge(d.team);$('#wmsg').textContent=(d.team>=0?'Tu es dans '+TEAMS[d.team][0]+' ! ':'Chacun pour soi. ')+'La partie commence…';$('#wpl').innerHTML='';break;
+case 'q':i=d.i;show('game');locked=false;$('#hp').textContent=$('#hp').textContent||'0';paint({c:d.c,q:d.q,o:d.o.map(t=>({t}))},d.i+1,d.n);runBar(d.T,()=>{if(!locked){locked=true;$('#ans').classList.add('done');$('#st').textContent='Temps écoulé'}});break;
+case 'r':showRes(d,0);break;
+case 'end':ended=true;showEnd(d);break}}
+$('#jc').oninput=e=>e.target.value=e.target.value.toUpperCase();
+
+/* venue depuis l'espace de la classe */
+(function(){const q=new URLSearchParams(location.search);if(q.get('c'))$('#tocl').hidden=false;if(q.get('n'))$('#jn').value=q.get('n').slice(0,14)})();
+/* lien direct ?room=CODE */
+(function(){const r=new URLSearchParams(location.search).get('room');if(r){MP=2;$('#jc').value=r.slice(0,4).toUpperCase();show('join')}})();
+home();
+</script>
+</body>
+</html>

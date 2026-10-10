@@ -94,6 +94,10 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 @media print{body{background:#fff;color:#000}.top,nav,.row{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="questions.js"></script>
 <link rel="stylesheet" href="theme.css">
 <script src="theme.js" data-title="Espace de la classe" data-sub="Réviser, échanger et progresser ensemble"></script>
 </head>
@@ -116,6 +120,11 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 <main>
 <section id="v-home">
 <div class="hello"><p class="mut" id="dt" style="margin:0 0 .3rem"></p><h2 id="hi"></h2></div>
+<div class="card cd tilt" id="cd" hidden></div>
+<div class="grid2 eq">
+<div class="card daily tilt" id="dly" hidden></div>
+<div class="card podium" id="pod"></div>
+</div>
 <div class="grid2">
 <div class="card"><h3 class="t">Les élèves de la classe</h3><div class="stats"><div><b id="son">0</b><span class="mut">en ligne</span></div><div><b id="stt">0</b><span class="mut">inscrits</span></div></div><div class="ros" id="ros"></div></div>
 <div><div class="links">
@@ -140,6 +149,11 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 
 <section id="v-admin" hidden>
 <h2>Administration</h2>
+<div class="card an"><h3>Prochain contrôle (compte à rebours)</h3><p class="mut" style="margin:.3rem 0 0">Le compte à rebours s'affiche en haut de l'accueil pour toute la classe.</p>
+<label for="cet">Titre</label><input id="cet" maxlength="60" placeholder="Contrôle de maths · chapitres 1 à 3">
+<label for="ced">Date et heure</label><input id="ced" type="datetime-local">
+<div class="row"><button class="btn" id="csave" type="button">Enregistrer</button><button class="btn o" id="cdel" type="button">Supprimer</button></div><p class="err" id="cerr"></p></div>
+<div class="card an"><h3>Classement Math Arena</h3><p class="mut" style="margin:.3rem 0 0">Remet les points de tous les élèves à zéro.</p><div class="row"><button class="btn o" id="rst" type="button">Réinitialiser le classement</button></div></div>
 <div class="card an"><h3>Créer les comptes des élèves</h3><p class="mut" style="margin:.3rem 0 0">Colle un nom par ligne, vérifie les identifiants proposés, puis crée les comptes. Les mots de passe sont générés automatiquement.</p>
 <label for="ns">Liste des élèves</label><textarea id="ns" placeholder="Prénom Nom&#10;Prénom Nom"></textarea>
 <div class="row"><button class="btn o" id="prev" type="button">Aperçu</button></div>
@@ -168,6 +182,7 @@ if(window.__FB){({A,Au,D}=window.__FB)}else{
 const app=A.initializeApp(CFG),auth=Au.getAuth(app),db=D.getDatabase(app);
 const EM=u=>u+'@1bacsm1.local',R=p=>D.ref(db,p);
 let me=null,subs=[],P={},PR={},AN={},MS={},view='home',kv=k=>{try{return +localStorage.getItem(k)||0}catch(e){return 0}},sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let CF={},SC={},DY={},cdT=null,busy=false;
 const COL=['#e21b3c','#1368ce','#d89e00','#26890c','#8a3ffc','#0f9d9d','#d6336c','#e8590c'];
 const hue=s=>COL[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COL.length];
 const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
@@ -181,7 +196,7 @@ const dmy=t=>new Date(t).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}
 $('#lf').onsubmit=async e=>{e.preventDefault();const u=$('#lu').value.trim().toLowerCase().replace(/\s+/g,'');$('#le').textContent='';$('#lb').disabled=true;
  try{await Au.signInWithEmailAndPassword(auth,EM(u),$('#lp').value)}catch(err){$('#le').textContent=errMsg(err)}$('#lb').disabled=false};
 Au.onAuthStateChanged(auth,u=>{if(u)boot(u);else{teardown();$('#app').hidden=true;$('#login').hidden=false}});
-function teardown(){subs.forEach(f=>{try{f()}catch(e){}});subs=[];me=null;P={};PR={};AN={};MS={}}
+function teardown(){subs.forEach(f=>{try{f()}catch(e){}});subs=[];me=null;P={};PR={};AN={};MS={};CF={};SC={};DY={};clearInterval(cdT)}
 const on=(path,cb,q)=>{subs.push(D.onValue(q||R(path),s=>cb(s.val()||{}),err=>{}))};
 
 async function boot(u){
@@ -199,9 +214,52 @@ async function boot(u){
  on('profiles',v=>{P=v;renderHome()});on('presence',v=>{PR=v;renderHome()});
  on('announcements',v=>{AN=v;renderAnn();renderHome();badges()});
  on('messages',v=>{MS=v;renderChat();badges()},D.query(R('messages'),D.limitToLast(100)));
+ on('config',v=>{CF=v;renderCd()});on('scores',v=>{SC=v;renderPod()});on('daily/'+u.uid,v=>{DY=v;renderDaily()});
+ try{if(window.FX&&!sessionStorage.getItem('welcomed')){sessionStorage.setItem('welcomed','1');setTimeout(()=>FX.rain(),1200)}}catch(e){}
  go('home');tick();
 }
 let tk;function tick(){clearInterval(tk);const f=()=>{if(!me)return;const d=new Date(),h=d.getHours();$('#hi').innerHTML=(h>=6&&h<18?'Bonjour':'Bonsoir')+', <span>'+esc(first(me.name))+'</span>';$('#dt').textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' · '+hm(d)};f();tk=setInterval(()=>{f();renderHome()},30000)}
+
+/* ---- widgets : compte à rebours, défi du jour, classement ---- */
+const rmath=el=>{try{if(window.renderMathInElement)renderMathInElement(el,{delimiters:[{left:'$',right:'$',display:false}],throwOnError:false})}catch(e){}};
+addEventListener('load',()=>{rmath($('#dly'))});
+const SHP=['▲','◆','●','■'];
+function renderCd(){const el=$('#cd'),e=CF.exam;clearInterval(cdT);if(!e||!e.ts||Date.now()-e.ts>6*36e5){el.hidden=true;return}el.hidden=false;const d=new Date(e.ts);
+ el.innerHTML='<div class="cd-l"><span class="kick">Prochain contrôle</span><h3>'+esc(e.title||'Contrôle')+'</h3><small class="mut">'+d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' · '+hm(e.ts)+'</small></div><div class="cd-n" id="cdn"></div>';
+ const f=()=>{const t=e.ts-Date.now(),n=$('#cdn');if(!n)return;
+  if(t<=0){n.innerHTML='<div class="cd-now">C\'est maintenant ! Bon courage 💪</div>';el.classList.add('urg');return}
+  const dd=Math.floor(t/864e5),hh=Math.floor(t%864e5/36e5),mm=Math.floor(t%36e5/6e4),ss=Math.floor(t%6e4/1e3),c=(v,l)=>'<div><b>'+String(v).padStart(2,'0')+'</b><small>'+l+'</small></div>';
+  n.innerHTML=c(dd,'jours')+c(hh,'heures')+c(mm,'min')+c(ss,'sec');el.classList.toggle('urg',t<864e5)};
+ f();cdT=setInterval(f,1000)}
+$('#csave').onclick=async()=>{const t=$('#cet').value.trim(),v=$('#ced').value;$('#cerr').textContent='';if(!v){$('#cerr').textContent='Choisis une date et une heure.';return}
+ try{await D.set(R('config/exam'),{title:t||'Contrôle',ts:new Date(v).getTime()});$('#cerr').textContent='Enregistré ✓'}catch(e){$('#cerr').textContent=errMsg(e)}};
+$('#cdel').onclick=async()=>{try{await D.remove(R('config/exam'));$('#cerr').textContent='Supprimé.'}catch(e){$('#cerr').textContent=errMsg(e)}};
+$('#rst').onclick=async()=>{if(confirm('Remettre les points de tous les élèves à zéro ?'))try{await D.remove(R('scores'))}catch(e){alert(errMsg(e))}};
+
+async function addPoints(n){const r=R('scores/'+me.uid),cur=await new Promise(res=>D.onValue(r,s=>res(s.val()||{}),{onlyOnce:true}));
+ await D.set(r,{name:me.name,total:(cur.total||0)+n,games:cur.games||0,best:cur.best||0,ts:D.serverTimestamp()})}
+function renderPod(){const el=$('#pod');if(!me)return;const ids=Object.keys(SC).filter(u=>SC[u]&&SC[u].total>0).sort((a,b)=>SC[b].total-SC[a].total);let h='<h3 class="t">Classement Math Arena</h3>';
+ if(!ids.length){el.innerHTML=h+'<p class="mut">Personne n\'est encore classé. Joue une partie de Math Arena pour ouvrir le podium !</p><a class="btn s" href="kahoot.html">Jouer maintenant</a>';return}
+ const top=ids.slice(0,3),H_=[120,88,64],C=['#f6c244','#c8d0e6','#d9894a'],M=['🥇','🥈','🥉'];
+ h+='<div class="pods">'+[1,0,2].filter(i=>top[i]).map(i=>{const u=top[i],s=SC[u];return '<div class="pdm r'+i+'" style="--h:'+H_[i]+'px;--c:'+C[i]+';--d:'+(i===0?.5:i===1?.2:.35)+'s">'+(i===0?'<span class="crown">👑</span>':'')+'<span class="av" style="background:'+hue(u)+'">'+esc(ini(s.name||'?'))+'</span><b>'+esc(first(s.name||'?'))+'</b><small>'+s.total+' pts</small><div class="pb">'+M[i]+'</div></div>'}).join('')+'</div>';
+ const rest=ids.slice(3,8);if(rest.length)h+='<div class="rk-l">'+rest.map((u,k)=>'<div class="pr"><span class="rk">'+(k+4)+'</span><b>'+esc(SC[u].name||'?')+(u===me.uid?' (toi)':'')+'</b><em>'+SC[u].total+' pts</em></div>').join('')+'</div>';
+ const my=ids.indexOf(me.uid);h+='<p class="mut" style="margin:.7rem 0 0;font-size:.88rem">'+(my>=0?'Ton rang : #'+(my+1)+' · '+SC[me.uid].total+' pts':'Tu n\'es pas encore classé : joue une partie !')+'</p>';el.innerHTML=h}
+
+const dkey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const hsh=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+function dailyQ(day){const B=window.QB;if(!B)return null;const all=[];Object.keys(B).forEach(c=>B[c].forEach(q=>all.push({c,q:q[0],o:q[1],e:q[2]})));if(!all.length)return null;
+ const h=hsh(day),q=all[h%all.length],ix=[0,1,2,3];let s=h;for(let i=3;i>0;i--){s=(Math.imul(s,1103515245)+12345)>>>0;const j=s%(i+1);[ix[i],ix[j]]=[ix[j],ix[i]]}
+ return{c:q.c,q:q.q,e:q.e,o:ix.map(i=>({t:q.o[i],ok:i===0}))}}
+function streak(){const d=new Date();let n=0;if(!DY[dkey(d)])d.setDate(d.getDate()-1);while(DY[dkey(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function renderDaily(){const el=$('#dly');if(!me)return;const day=dkey(),q=dailyQ(day);if(!q){el.hidden=true;return}el.hidden=false;
+ const st=streak(),dots=[];for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);const r=DY[dkey(d)];dots.push('<i class="'+(r?(r.ok?'ok':'no'):'')+(k===0?' today':'')+'" title="'+d.toLocaleDateString('fr-FR',{weekday:'long'})+'"></i>')}
+ const a=DY[day];
+ el.innerHTML='<div class="dh"><h3 class="t" style="margin:0">Défi du jour</h3><span class="fire'+(st?' on':'')+'">🔥 '+st+' jour'+(st>1?'s':'')+'</span></div><div class="dots">'+dots.join('')+'</div><p class="dc">'+esc(q.c)+'</p><div class="dq">'+esc(q.q)+'</div>'
+ +'<div class="dopts'+(a?' done':'')+'">'+q.o.map((o,k)=>'<button type="button" class="do d'+k+(a&&o.ok?' ok':'')+'" data-k="'+k+'"'+(a?' disabled':'')+' style="animation-delay:'+(k*.07)+'s"><em>'+SHP[k]+'</em><span>'+esc(o.t)+'</span></button>').join('')+'</div>'
+ +(a?'<div class="dres '+(a.ok?'g':'b')+'"><b>'+(a.ok?'Bravo ! +300 points pour le classement':'Raté, mais ta série continue !')+'</b><p>'+esc(q.e)+'</p><small class="mut">Un nouveau défi t\'attend demain.</small></div>':'');
+ rmath(el);if(!a)$$('#dly .do').forEach(b=>b.onclick=()=>answerDaily(+b.dataset.k,q,day))}
+async function answerDaily(k,q,day){if(busy)return;busy=true;const ok=q.o[k].ok;
+ try{await D.set(R('daily/'+me.uid+'/'+day),{ok,ts:D.serverTimestamp()});if(ok){await addPoints(300);if(window.FX)FX.rain()}}catch(e){alert(errMsg(e))}busy=false}
 
 /* ---- navigation ---- */
 function go(v){view=v;['home','ann','chat','admin'].forEach(x=>$('#v-'+x).hidden=x!==v);$$('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));

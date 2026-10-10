@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#081230;--navy2:#10285c;--gold:#f6c244;--cyan:#4cc9f0;--on:#f3f6ff;--m:#b8c3e3;--hd:'Sora','Segoe UI',Arial,sans-serif;--bd:'Manrope','Segoe UI',Arial,sans-serif;
@@ -176,6 +175,14 @@ input.in.cd{text-transform:uppercase;letter-spacing:.35em;text-align:center;font
 <div class="chips" id="wpl" style="justify-content:center;margin-top:1.2rem"></div>
 </section>
 
+<section id="auth" hidden>
+<button class="back" id="authb" type="button">‹ Retour</button>
+<h2 class="ptitle">Connexion à la classe</h2>
+<p class="hint">Le multijoueur est réservé aux élèves de la classe. Utilise l'identifiant et le mot de passe de l'espace 1BAC SM1.</p>
+<div class="box"><label for="au">Identifiant</label><input class="in" id="au" autocapitalize="none" autocomplete="username" spellcheck="false"><label for="ap">Mot de passe</label><input class="in" id="ap" type="password" autocomplete="current-password"></div>
+<div class="go"><button class="btn" id="ago" type="button">Se connecter</button><p class="hint" id="am"></p></div>
+</section>
+
 <section id="game" hidden>
 <div class="hud"><span class="pill" id="hn"></span><span class="pill badge" id="ht" hidden></span><span class="pill hearts" id="hl"></span><button class="btn o" id="jk" type="button">50/50</button><span class="pill strk" id="hs"></span><span class="pill">Score <b id="hp">0</b></span></div>
 <div class="bar"><i id="tb"></i></div>
@@ -339,7 +346,7 @@ function rm(el){try{if(window.renderMathInElement)renderMathInElement(el,{delimi
 addEventListener('load',()=>{['#q','#ans','#fb','#rev','#sb'].forEach(s=>rm($(s)))});
 let ac;function beep(f,d,t){if(!snd)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
 const good=()=>{beep(660,.12);setTimeout(()=>beep(880,.15),110)},bad=()=>beep(180,.3,'sawtooth');
-function show(id){['intro','home','lobby','join','wait','game','end'].forEach(s=>$('#'+s).hidden=s!==id);scrollTo(0,0)}
+function show(id){['intro','home','lobby','join','wait','game','end','auth'].forEach(s=>$('#'+s).hidden=s!==id);scrollTo(0,0)}
 
 /* --- entrée animée --- */
 (function(){const el=$('#sym');for(let k=0;k<26;k++){const s=document.createElement('span');s.textContent=SYM[k%SYM.length];s.style.cssText='left:'+Math.random()*100+'%;font-size:'+(1.2+Math.random()*2.6)+'rem;animation-duration:'+(9+Math.random()*12)+'s;animation-delay:-'+Math.random()*20+'s;--r:'+Math.round(Math.random()*60-30)+'deg';el.append(s)}
@@ -366,7 +373,7 @@ $('#b1').onclick=()=>{MP=0;home();show('home')};
 $('#b2').onclick=()=>{MP=1;home();show('home')};
 $('#b3').onclick=()=>{MP=2;show('join')};
 document.querySelectorAll('.back').forEach(b=>b.onclick=()=>{MP=0;show('intro')});
-$('#start').onclick=()=>MP===1?hostCreate():start();
+$('#start').onclick=()=>MP===1?needAuth(hostCreate):start();
 
 /* --- affichage commun d'une question --- */
 function hud(){$('#jk').hidden=$('#hl').hidden=MP!==0;$('#ht').hidden=!(MP&&my.team>=0)}
@@ -412,13 +419,45 @@ function showEnd(m){clearInterval(tm);show('end');const w=m.bd.tm.length?m.bd.tm
 $('#me').hidden=!!m.viewer;$('#fs').textContent=m.s;$('#fa').textContent=Math.round(100*m.r/m.n)+'%';$('#fk').textContent=m.b;$('#fc').textContent=m.r+' / '+m.n;
 $('#solobtn').hidden=true;$('#mpbtn').hidden=false;$('#rev').innerHTML='';renderBoard(m.bd,$('#eb'));good();rain()}
 
+/* --- transport Firebase (remplace PeerJS : marche sur 4G, Wi-Fi, navigateur WhatsApp) --- */
+const FBC={apiKey:"AIzaSyDS9M6wbnbnh5VzF4FbjCnKmvw0c_TMwTo",authDomain:"sm1-classe.firebaseapp.com",databaseURL:"https://sm1-classe-default-rtdb.europe-west1.firebasedatabase.app",projectId:"sm1-classe",appId:"1:409210961184:web:03d1623a892421d99c2b45"};
+let FB=null,afterAuth=null;
+async function fbInit(){if(FB)return FB;let A,Au,D;if(window.__FB){({A,Au,D}=window.__FB)}else{const U='https://www.gstatic.com/firebasejs/10.12.2/';[A,Au,D]=await Promise.all([import(U+'firebase-app.js'),import(U+'firebase-auth.js'),import(U+'firebase-database.js')])}
+const app=A.initializeApp(FBC),auth=Au.getAuth(app);await new Promise(r=>{let u;u=Au.onAuthStateChanged(auth,()=>{if(u)u();r()});});FB={Au,D,auth,db:D.getDatabase(app)};return FB}
+async function needAuth(next){try{await fbInit()}catch(e){alert("Impossible de charger Firebase. Vérifie ta connexion internet.");return}
+if(FB.auth.currentUser)return next();afterAuth=next;$('#am').textContent='';show('auth')}
+$('#ago').onclick=async()=>{const u=$('#au').value.trim().toLowerCase().replace(/\s+/g,'');$('#ago').disabled=true;$('#am').textContent='';
+try{await FB.Au.signInWithEmailAndPassword(FB.auth,u+'@1bacsm1.local',$('#ap').value);const f=afterAuth;afterAuth=null;if(f)f()}catch(e){$('#am').textContent='Identifiant ou mot de passe incorrect.'}$('#ago').disabled=false};
+$('#authb').onclick=()=>show('intro');
+class Ev{constructor(){this.h={}}on(e,f){(this.h[e]=this.h[e]||[]).push(f);return this}emit(e,...a){(this.h[e]||[]).forEach(f=>f(...a))}}
+class Conn extends Ev{constructor(peer,send){super();this.peer=peer;this.open=false;this._s=send}send(d){this._s&&this._s(d)}}
+const once=(D,r)=>new Promise(res=>D.onValue(r,s=>res(s),{onlyOnce:true}));
+/* même interface que PeerJS : new Peer(id) = hôte, new Peer() = joueur, peer.connect(id) */
+class Peer extends Ev{constructor(id){super();this.id=id;this.room=id?id.replace('mqarena-',''):null;
+(async()=>{try{await fbInit();if(!FB.auth.currentUser)return this.emit('error',{type:'not-logged'});this.uid=FB.auth.currentUser.uid;
+const {D,db}=FB;if(id){const R=p=>D.ref(db,'rooms/'+this.room+(p?'/'+p:''));
+if((await once(D,R('meta'))).exists())return this.emit('error',{type:'unavailable-id'});
+await D.set(R('meta'),{host:this.uid,ts:D.serverTimestamp()});D.onDisconnect(R()).remove();
+const conns={},seen={};this.emit('open',id);
+D.onChildAdded(R('up'),s=>{const cu=s.key;if(seen[cu])return;seen[cu]=1;const c=conns[cu]=new Conn(cu,d=>D.push(R('down/'+cu),{j:JSON.stringify(d)}));c.open=true;this.emit('connection',c);
+D.onChildAdded(R('up/'+cu),m=>{try{c.emit('data',JSON.parse(m.val().j))}catch(e){}D.remove(m.ref)})});
+D.onChildRemoved(R('peers'),s=>{const c=conns[s.key];if(c&&c.open){c.open=false;c.emit('close')}})}
+else this.emit('open','guest')}catch(e){this.emit('error',{type:e.code||'network'})}})()}
+connect(hostId){const room=hostId.replace('mqarena-',''),conn=new Conn(hostId,null);
+(async()=>{try{const {D,db}=FB,uid=FB.auth.currentUser.uid,R=p=>D.ref(db,'rooms/'+room+(p?'/'+p:''));
+if(!(await once(D,R('meta'))).exists())return this.emit('error',{type:'peer-unavailable'});
+conn._s=d=>D.push(R('up/'+uid),{j:JSON.stringify(d)});const pe=R('peers/'+uid);await D.onDisconnect(pe).remove();await D.set(pe,true);
+D.onChildAdded(R('down/'+uid),m=>{try{conn.emit('data',JSON.parse(m.val().j))}catch(e){}D.remove(m.ref)});
+D.onValue(R('meta'),s=>{if(!s.exists()&&conn.open){conn.open=false;conn.emit('close')}});
+conn.open=true;conn.emit('open')}catch(e){this.emit('error',{type:e.code||'network'})}})();return conn}}
+
 /* --- hôte --- */
 const rc=()=>Array.from({length:4},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*31)]).join('');
-function needPeer(){if(typeof Peer==='undefined'){alert("Impossible de charger PeerJS. Vérifie ta connexion internet puis recharge la page.");return false}return true}
+function needPeer(){return true}
 const exp=()=>Object.values(H.P).filter(p=>!p.off).length,cnt=()=>Object.values(H.P).filter(p=>!p.off&&p.a).length;
 function hostCreate(){if(!needPeer())return;const code=rc();H={code,P:{},conns:{},K:KT,play:HP,i:-1,open:false,started:false};ended=false;
 peer=new Peer('mqarena-'+code);
-peer.on('error',e=>{if(e.type==='unavailable-id')return hostCreate();alert('Erreur de connexion : '+e.type)});
+peer.on('error',e=>{if(e.type==='unavailable-id')return hostCreate();alert(e.type==='not-logged'?'Connecte-toi à l\'espace de la classe.':'Erreur de connexion : '+e.type)});
 peer.on('open',()=>{if(HP)H.P.H0=mkP('Hôte');$('#code').textContent=code;$('#lnk').value=location.href.split('?')[0].split('#')[0]+'?room='+code;lobbyUp();show('lobby')});
 peer.on('connection',c=>{c.on('data',d=>hData(c,d));c.on('close',()=>{const p=H.P[c.peer];if(!p)return;if(H.started){p.off=true;if(H.open)chk()}else{delete H.P[c.peer];delete H.conns[c.peer];lobbyUp()}})})}
 const mkP=n=>({n,team:-1,s:0,st:0,b:0,r:0,a:null,g:0,off:false});
@@ -448,14 +487,15 @@ Object.values(H.P).forEach(p=>{const a=p.a;if(a&&a.ok){p.st++;p.b=Math.max(p.b,p
 const bd=board(),last=H.i+1>=Q.length;
 Object.keys(H.P).forEach(id=>{const p=H.P[id],m={t:'r',ok:oi,k:p.a?p.a.k:-1,g:p.g,s:p.s,st:p.st,e:q.e,bd,last};if(id==='H0')showRes(m,1);else{const c=H.conns[id];if(c&&c.open)c.send(m)}});
 if(!H.P.H0)showRes({ok:oi,k:-1,g:0,s:0,st:0,e:q.e,bd,last,viewer:1},1)}
-function endMP(){ended=true;const bd=board();Object.keys(H.P).forEach(id=>{const p=H.P[id],m={t:'end',bd,s:p.s,r:p.r,b:p.b,n:Q.length};if(id==='H0')showEnd(m);else{const c=H.conns[id];if(c&&c.open)c.send(m)}});if(!H.P.H0)showEnd({bd,s:0,r:0,b:0,n:Q.length,viewer:1})}
+function endMP(){ended=true;const bd=board();Object.keys(H.P).forEach(id=>{const p=H.P[id],m={t:'end',bd,s:p.s,r:p.r,b:p.b,n:Q.length};if(id==='H0')showEnd(m);else{const c=H.conns[id];if(c&&c.open)c.send(m)}});if(!H.P.H0)showEnd({bd,s:0,r:0,b:0,n:Q.length,viewer:1});setTimeout(()=>{try{FB.D.remove(FB.D.ref(FB.db,'rooms/'+H.code))}catch(e){}},5000)}
 
 /* --- joueur --- */
-$('#jgo').onclick=()=>{if(!needPeer())return;const n=$('#jn').value.trim(),c=$('#jc').value.trim().toUpperCase();
+$('#jgo').onclick=()=>needAuth(joinGo);
+function joinGo(){show('join');const n=$('#jn').value.trim(),c=$('#jc').value.trim().toUpperCase();
 if(!n||c.length!==4){$('#jm').textContent='Entre ton prénom et le code à 4 caractères.';return}
 $('#jm').textContent='Connexion…';$('#jgo').disabled=true;MP=2;ended=false;my.team=-1;
 const fail=m=>{$('#jm').textContent=m;$('#jgo').disabled=false},to=setTimeout(()=>fail('Salle introuvable ou connexion impossible. Vérifie le code.'),12000);
-peer=new Peer();peer.on('error',e=>{clearTimeout(to);fail(e.type==='peer-unavailable'?'Salle introuvable. Vérifie le code.':'Erreur : '+e.type)});
+peer=new Peer();peer.on('error',e=>{clearTimeout(to);fail(e.type==='peer-unavailable'?'Salle introuvable. Vérifie le code.':e.type==='not-logged'?'Connecte-toi à l\'espace de la classe.':'Erreur : '+e.type)});
 peer.on('open',()=>{conn=peer.connect('mqarena-'+c,{reliable:true});conn.on('open',()=>{clearTimeout(to);conn.send({t:'join',n})});conn.on('data',cData);conn.on('close',()=>{if(!ended){clearInterval(tm);alert("Connexion perdue avec l'hôte.");location.reload()}})})};
 function cData(d){if(!d)return;switch(d.t){
 case 'err':$('#jm').textContent=d.m;$('#jgo').disabled=false;show('join');break;

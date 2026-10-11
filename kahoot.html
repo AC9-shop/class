@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Math Arena</title>
+<title>Math Arena · Le duel de maths de la classe</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
@@ -213,7 +213,8 @@ const $=s=>document.querySelector(s);
    Format : [ "question", ["bonne réponse","faux 1","faux 2","faux 3"], "explication" ]
    La bonne réponse est toujours en premier : le jeu mélange les choix tout seul.
    Les maths s'écrivent en LaTeX entre $...$ (ex. $x^{2}+1$, $\frac{1}{2}$, $\sqrt{3}$). */
-const B=window.QB;
+const B=window.QB||{};
+if(!window.QB)document.body.insertAdjacentHTML('afterbegin','<div role="alert" style="position:fixed;left:0;right:0;top:0;z-index:99999;background:#e21b3c;color:#fff;padding:.7rem 3.6rem .7rem 1rem;font:600 .9rem system-ui,sans-serif">⚠ Le fichier <b>questions.js</b> est introuvable. Mets-le dans le même dossier que kahoot.html (nom en minuscules), puis recharge la page avec Ctrl+F5. Tu peux quand même rejoindre une partie créée par quelqu\'un d\'autre.</div>');
 /* ======== JEU ======== */
 const SH=['▲','◆','●','■'];
 const TEAMS=[['Les Vecteurs','#e21b3c'],['Les Limites','#1368ce'],['Les Dérivées','#d89e00'],['Les Suites','#26890c']];
@@ -260,7 +261,7 @@ $('#start').onclick=()=>MP===1?needAuth(hostCreate):start();
 /* --- affichage commun d'une question --- */
 function hud(){$('#jk').hidden=$('#hl').hidden=MP!==0;$('#ht').hidden=!(MP&&my.team>=0)}
 function setBadge(t){my.team=t;const b=$('#ht');if(t>=0){b.textContent=TEAMS[t][0];b.style.background=TEAMS[t][1]}}
-function runBar(sec,done){clearInterval(tm);t0=performance.now();const b=$('#tb');const f=()=>{const el=(performance.now()-t0)/1000,r=Math.max(0,1-el/sec);b.style.transform='scaleX('+r+')';b.classList.toggle('low',r<.25);if(el>=sec){clearInterval(tm);done()}};tm=setInterval(f,100);f()}
+function runBar(sec,done){clearInterval(tm);t0=performance.now();const b=$('#tb');const f=()=>{const el=(performance.now()-t0)/1000,r=Math.max(0,1-el/sec);b.style.transform='scaleX('+r+')';b.classList.toggle('low',r<.25);if(el>=sec){clearInterval(tm);done()}};tm=setInterval(f,40);f()}
 function paint(q,n,tot){hud();$('#hn').textContent=n+' / '+tot;$('#q').innerHTML='<div><small>'+q.c+'</small>'+q.q+'</div>';
 const a=$('#ans');a.className='ans';a.innerHTML='';q.o.forEach((o,k)=>{const b=document.createElement('button');b.type='button';b.className='a';b.style.setProperty('--n',k);b.innerHTML='<em>'+SH[k]+'</em><span>'+o.t+'</span>';b.onclick=()=>choose(k);a.append(b)});
 $('#fb').hidden=$('#sb').hidden=true;$('#st').textContent='';rm($('#q'));rm($('#ans'))}
@@ -400,6 +401,9 @@ $('#jc').oninput=e=>e.target.value=e.target.value.toUpperCase();
 (function(){const q=new URLSearchParams(location.search);if(q.get('c'))$('#tocl').hidden=false;if(q.get('n'))$('#jn').value=q.get('n').slice(0,14)})();
 /* lien direct ?room=CODE */
 (function(){const r=new URLSearchParams(location.search).get('room');if(r){MP=2;$('#jc').value=r.slice(0,4).toUpperCase();show('join')}})();
+(function(){const hp=$('#hp');if(!hp||!window.MutationObserver)return;let shown=parseInt(hp.textContent)||0,busy=false;
+ new MutationObserver(()=>{if(busy)return;const to=parseInt(hp.textContent);if(isNaN(to)||to===shown)return;const from=shown,t0=performance.now();busy=true;hp.textContent=from;
+  (function st(t){const p=Math.min(1,(t-t0)/600),e=1-Math.pow(1-p,3);shown=Math.round(from+(to-from)*e);hp.textContent=shown;if(p<1)requestAnimationFrame(st);else{shown=to;busy=false}})(t0)}).observe(hp,{childList:true,characterData:true,subtree:true})})();
 home();
 </script>
 </body>

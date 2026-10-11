@@ -98,15 +98,17 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <script src="questions.js"></script>
+<link rel="icon" type="image/png" href="logo-classe-sm.png">
+<link rel="apple-touch-icon" href="logo-classe-sm.png">
 <link rel="stylesheet" href="theme.css">
-<script src="theme.js" data-title="Espace de la classe" data-sub="Réviser, échanger et progresser ensemble"></script>
+<script src="theme.js" data-logo="logo-classe.png" data-title="Espace de la classe" data-sub="Réviser, échanger et progresser ensemble"></script>
 </head>
 <body>
 
 <div id="setup" class="center" hidden><div class="box card"><div class="logo">!</div><h1>Configuration manquante</h1><p class="mut">Le site n'est pas encore relié à Firebase. Ouvre <code>index.html</code>, remplace les valeurs de <code>CFG</code> par celles de ton projet Firebase (voir LISEZMOI.txt), puis recharge la page.</p></div></div>
 
 <div id="login" class="center" hidden><form class="box card" id="lf" autocomplete="on">
-<div class="logo">∑</div><h1>1BAC SM1</h1><p class="mut" style="margin:0">Espace privé de la classe. Connecte-toi avec l'identifiant et le mot de passe donnés par Anass.</p>
+<img class="hero-logo" src="logo-classe.png" alt="Logo 1BAC SM" width="170" height="170"><h1 style="text-align:center">1BAC SM1</h1><p class="mut" style="margin:0">Espace privé de la classe. Connecte-toi avec l'identifiant et le mot de passe donnés par Anass.</p>
 <label for="lu">Identifiant</label><input id="lu" autocomplete="username" autocapitalize="none" spellcheck="false" required>
 <label for="lp">Mot de passe</label><input id="lp" type="password" autocomplete="current-password" required>
 <p class="err" id="le" role="alert"></p>
@@ -114,7 +116,7 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 </form></div>
 
 <div id="app" hidden>
-<header class="top"><div class="in"><div class="brand"><div class="logo">∑</div>1BAC SM1</div><div class="sp"></div>
+<header class="top"><div class="in"><div class="brand"><img class="brand-logo" src="logo-classe-sm.png" alt="" width="42" height="42">1BAC SM1</div><div class="sp"></div>
 <button class="me" id="meb" type="button" aria-label="Mon profil"><span class="av" id="mav"></span><span class="n" id="mnm"></span></button></div>
 <nav id="nav"><i class="ind" id="ind"></i><button data-v="home" class="on" type="button">Accueil</button><button data-v="ann" type="button">Annonces<span class="bdg" id="ba" hidden></span></button><button data-v="chat" type="button">Discussion<span class="bdg" id="bc" hidden></span></button><a href="archives.html">Archives</a><a href="kahoot.html" id="arena">Math Arena</a><button data-v="admin" id="nadm" type="button" hidden>Admin</button></nav></header>
 <main>

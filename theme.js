@@ -2,14 +2,14 @@
 (function(){
 'use strict';
 var S=document.currentScript,H=document.documentElement;
-var T=(S&&S.getAttribute('data-title'))||'1BAC SM1',SUB=(S&&S.getAttribute('data-sub'))||'',KICK=(S&&S.getAttribute('data-kicker'))||'1BAC SM1 · Anisse International School';
+var T=(S&&S.hasAttribute('data-title'))?S.getAttribute('data-title'):'1BAC SM1',LOGO=(S&&S.getAttribute('data-logo'))||'',SUB=(S&&S.getAttribute('data-sub'))||'',KICK=(S&&S.getAttribute('data-kicker'))||'1BAC SM1 · Anisse International School';
 var RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
 var key='sp_'+location.pathname,seen=false;try{seen=!!sessionStorage.getItem(key);sessionStorage.setItem(key,'1')}catch(e){}
 var dur=2600;
 
 /* ---------- transition de page (voile) ---------- */
 var SY=['\u2211','\u03C0','\u222B','\u221A','\u221E','\u0394','\u03B8','\u2248','x\u00B2','\u2202','\u00B1','\u00F7','\u03BB','\u03C6','\u03A9','f(x)','sin','lim','\u211D','\u2200','\u2203','%','e','n!'];
-var pt=document.createElement('div');pt.id='pt';pt.innerHTML='<b>\u2211</b>';H.appendChild(pt);
+var pt=document.createElement('div');pt.id='pt';pt.innerHTML=LOGO?'<img src="'+LOGO+'" alt="">':'<b>\u2211</b>';H.appendChild(pt);
 addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||a.target==='_blank'||a.hasAttribute('download'))return;
  var u;try{u=new URL(a.href,location.href)}catch(x){return}if(u.origin!==location.origin||(u.protocol!=='http:'&&u.protocol!=='https:'))return;if(u.pathname===location.pathname&&u.search===location.search)return;
  e.preventDefault();H.classList.add('leaving');setTimeout(function(){location.href=u.href},RM?0:340)});
@@ -22,6 +22,8 @@ function openSplash(){if(done)return;done=true;if(sp)sp.classList.add('open');H.
 if(!seen&&!RM){
  sp=document.createElement('div');sp.id='splash';sp.setAttribute('role','presentation');
  sp.innerHTML='<div class="sp-in"><div class="sp-orb">\u2211</div><div class="sp-k"></div><h1 class="sp-t"></h1><p class="sp-s"></p><div class="sp-bar"><i></i></div><p class="sp-h">Touche pour entrer</p></div>';
+ if(LOGO){var ob=sp.querySelector('.sp-orb');ob.className='sp-logo';ob.innerHTML='<img src="'+LOGO+'" alt="">'}
+ if(!T){var tt=sp.querySelector('.sp-t');tt.parentNode.removeChild(tt)}
  sp.querySelector('.sp-k').textContent=KICK;sp.querySelector('.sp-s').textContent=SUB;
  var h=sp.querySelector('.sp-t');
  T.split('').forEach(function(c,i){var s=document.createElement('span');s.textContent=c===' '?'\u00a0':c;s.style.animationDelay=(.3+i*.045)+'s';h.appendChild(s)});

@@ -116,7 +116,7 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 <div id="app" hidden>
 <header class="top"><div class="in"><div class="brand"><div class="logo">∑</div>1BAC SM1</div><div class="sp"></div>
 <button class="me" id="meb" type="button" aria-label="Mon profil"><span class="av" id="mav"></span><span class="n" id="mnm"></span></button></div>
-<nav id="nav"><button data-v="home" class="on" type="button">Accueil</button><button data-v="ann" type="button">Annonces<span class="bdg" id="ba" hidden></span></button><button data-v="chat" type="button">Discussion<span class="bdg" id="bc" hidden></span></button><a href="archives.html">Archives</a><a href="kahoot.html" id="arena">Math Arena</a><button data-v="admin" id="nadm" type="button" hidden>Admin</button></nav></header>
+<nav id="nav"><i class="ind" id="ind"></i><button data-v="home" class="on" type="button">Accueil</button><button data-v="ann" type="button">Annonces<span class="bdg" id="ba" hidden></span></button><button data-v="chat" type="button">Discussion<span class="bdg" id="bc" hidden></span></button><a href="archives.html">Archives</a><a href="kahoot.html" id="arena">Math Arena</a><button data-v="admin" id="nadm" type="button" hidden>Admin</button></nav></header>
 <main>
 <section id="v-home">
 <div class="hello"><p class="mut" id="dt" style="margin:0 0 .3rem"></p><h2 id="hi"></h2></div>
@@ -206,6 +206,7 @@ async function boot(u){
  const adm=await new Promise(r=>D.onValue(R('admins/'+u.uid),s=>r(s.exists()),{onlyOnce:true}));
  me={uid:u.uid,name:prof.name,username:prof.username,admin:adm};
  $('#app').hidden=false;$('#mnm').textContent=first(me.name);$('#mav').textContent=ini(me.name);$('#mav').style.background=hue(me.uid);
+ $('#ros').innerHTML=Array(6).join('<div class="st sk"><span class="av"></span><div><b></b><small></small></div></div>');$('#pod').innerHTML='<h3 class="t">Classement Math Arena</h3><div class="st sk"><span class="av"></span><div><b></b><small></small></div></div>';setTimeout(()=>{if(me&&$('#pod .sk'))renderPod()},6000);
  $('#nadm').hidden=!adm;$('#annform').hidden=!adm;
  const q='?c=1&n='+encodeURIComponent(first(me.name));$('#arena').href='kahoot.html'+q;$('#arena2').href='kahoot.html'+q;
  /* présence */
@@ -262,17 +263,19 @@ async function answerDaily(k,q,day){if(busy)return;busy=true;const ok=q.o[k].ok;
  try{await D.set(R('daily/'+me.uid+'/'+day),{ok,ts:D.serverTimestamp()});if(ok){await addPoints(300);if(window.FX)FX.rain()}}catch(e){alert(errMsg(e))}busy=false}
 
 /* ---- navigation ---- */
-function go(v){view=v;['home','ann','chat','admin'].forEach(x=>$('#v-'+x).hidden=x!==v);$$('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+function moveInd(){const b=$('#nav button.on'),i=$('#ind');if(!b||!i)return;i.style.width=b.offsetWidth+'px';i.style.transform='translateX('+b.offsetLeft+'px)'}
+addEventListener('resize',moveInd);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveInd);
+function go(v){view=v;['home','ann','chat','admin'].forEach(x=>$('#v-'+x).hidden=x!==v);$$('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));moveInd();
  if(v==='ann'){sv('ann_seen',Date.now())}if(v==='chat'){sv('chat_seen',Date.now());const m=$('#msgs');setTimeout(()=>m.scrollTop=m.scrollHeight,0)}badges();scrollTo(0,0)}
 $$('#nav button[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));$$('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.go)});
 function badges(){const as=kv('ann_seen'),cs=kv('chat_seen');
  const na=view==='ann'?0:Object.values(AN).filter(a=>a.ts>as).length,nc=view==='chat'?0:Object.values(MS).filter(m=>m.ts>cs&&m.uid!==(me&&me.uid)).length;
- $('#ba').hidden=!na;$('#ba').textContent=na;$('#bc').hidden=!nc;$('#bc').textContent=nc}
+ moveInd();$('#ba').hidden=!na;$('#ba').textContent=na;$('#bc').hidden=!nc;$('#bc').textContent=nc}
 
 /* ---- accueil ---- */
 function renderHome(){if(!me)return;const ids=Object.keys(P);const on_=u=>PR[u]&&PR[u].state==='online';
  ids.sort((a,b)=>(on_(b)-on_(a))||P[a].name.localeCompare(P[b].name));
- $('#son').textContent=ids.filter(on_).length;$('#stt').textContent=ids.length;
+ {const _n=ids.filter(on_).length;if(window.FX){FX.count($('#son'),_n);FX.count($('#stt'),ids.length)}else{$('#son').textContent=_n;$('#stt').textContent=ids.length}}
  $('#ros').innerHTML=ids.map(u=>{const p=P[u],o=on_(u);return '<div class="st"><span class="av '+(o?'on':'')+'" style="background:'+hue(u)+'">'+esc(ini(p.name))+'<i class="dot"></i></span><div><b>'+esc(p.name)+(u===me.uid?' (toi)':'')+'</b><small>'+(o?'en ligne':ago(PR[u]&&PR[u].last))+'</small></div></div>'}).join('');
  const l=Object.values(AN).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.ts-a.ts)[0],el=$('#last');
  if(l){el.hidden=false;el.innerHTML='<h3 class="t">Dernière annonce</h3><h3>'+esc(l.title)+'</h3><div class="meta">'+dmy(l.ts)+'</div><p>'+esc(l.text.length>220?l.text.slice(0,220)+'…':l.text)+'</p>'}else el.hidden=true}

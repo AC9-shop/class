@@ -166,3 +166,42 @@ html.arrive #pt{opacity:1;transition:none}
 .rk-l .pr b{flex:1;font-weight:600}.rk-l em{font-style:normal;color:#f6c244;font-weight:700}
 .rk{width:1.6rem;height:1.6rem;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center;font:700 .8rem 'Sora',sans-serif;flex:none}
 @media(prefers-reduced-motion:reduce){.cd::before,.daily::before,.cd.urg,.fire.on,.cd-n div:last-child b,.pdm .crown,#pt b{animation:none!important}}
+
+/* ===== décor avancé + fluidité ===== */
+html{scroll-behavior:smooth}
+#fxc{position:absolute;inset:0;opacity:.85}
+#bgfx .wv{position:absolute;left:0;right:0;bottom:0;height:34vh;overflow:hidden;opacity:.9}
+#bgfx .wv svg{position:absolute;left:0;bottom:0;width:200%;height:100%;animation:fxwave 28s linear infinite;will-change:transform}
+#bgfx .wv svg path{fill:none;stroke-linecap:round}
+#bgfx .wv svg:nth-child(1){bottom:-4%;animation-duration:34s}#bgfx .wv svg:nth-child(1) path{stroke:rgba(76,201,240,.16);stroke-width:2}
+#bgfx .wv svg:nth-child(2){bottom:6%;height:80%;animation-duration:26s;animation-direction:reverse}#bgfx .wv svg:nth-child(2) path{stroke:rgba(246,194,68,.13);stroke-width:2}
+#bgfx .wv svg:nth-child(3){bottom:14%;height:60%;animation-duration:42s}#bgfx .wv svg:nth-child(3) path{stroke:rgba(138,63,252,.18);stroke-width:2}
+@keyframes fxwave{to{transform:translate3d(-50%,0,0)}}
+.cglow{position:fixed;left:0;top:0;width:420px;height:420px;z-index:-1;pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(76,201,240,.16),rgba(246,194,68,.06) 45%,transparent 70%);will-change:transform}
+/* ripple */
+.chip,.do{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:fxrip .65s cubic-bezier(.2,.7,.3,1) forwards;pointer-events:none;z-index:0}
+@keyframes fxrip{to{transform:scale(1);opacity:0}}
+.btn,.chip,.a,.do,.lk,nav button,nav a{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.btn:active{transform:scale(.97)!important}
+/* apparition au défilement */
+.rv-on .rvz{opacity:0;transform:translate3d(0,26px,0) scale(.985);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv-on .rvz.in{opacity:1;transform:none}
+/* squelettes de chargement */
+.sk b,.sk small,.sk .av{display:block;background:linear-gradient(100deg,rgba(255,255,255,.07) 30%,rgba(255,255,255,.2) 50%,rgba(255,255,255,.07) 70%);background-size:220% 100%;animation:fxsk 1.3s linear infinite;border-radius:8px}
+.sk b{width:110px;height:13px;margin-bottom:6px}.sk small{width:62px;height:10px}
+.sk .av{background-color:transparent}
+@keyframes fxsk{to{background-position:-220% 0}}
+/* indicateur de navigation qui glisse */
+nav{position:relative}
+nav .ind{position:absolute;left:0;top:0;bottom:.6rem;width:0;border-radius:999px;background:linear-gradient(135deg,#ffd877,#f6c244);box-shadow:0 8px 22px -10px rgba(246,194,68,.9);transition:transform .5s cubic-bezier(.2,.9,.3,1),width .5s cubic-bezier(.2,.9,.3,1);z-index:0;pointer-events:none}
+nav button,nav a{position:relative;z-index:1;transition:color .3s}
+nav .on{background:transparent!important;box-shadow:none!important;color:#1b1403}
+/* fluidité : blur moins lourd sur mobile, GPU sur les éléments animés */
+@media(max-width:700px){.card,.box,.yr,.lk,.st{-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}#bgfx .wv{height:26vh}}
+.card,.box,.yr,.lk,.st,.q,.a,.pdm .pb{backface-visibility:hidden}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}#bgfx .wv svg,.cglow,.sk b,.sk small,.sk .av{animation:none!important}.rv-on .rvz{opacity:1!important;transform:none!important;transition:none!important}.rip{display:none}}
+
+.bar i{transition:transform .08s linear;will-change:transform}
+#hp{display:inline-block;min-width:1.2em;text-align:right;font-variant-numeric:tabular-nums}

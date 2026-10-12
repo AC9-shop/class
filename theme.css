@@ -221,3 +221,51 @@ nav .on{background:transparent!important;box-shadow:none!important;color:#1b1403
 .hero-logo.arena.sm{width:clamp(130px,38vw,190px)}
 #ttl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){.sp-logo,.hero-logo,#pt img{animation:none!important}}
+
+/* ===== discussion (style messagerie) ===== */
+.wa{position:relative;display:flex;flex-direction:column;height:calc(100vh - 190px);height:calc(100dvh - 190px);min-height:420px;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.13);background:rgba(5,11,31,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 24px 60px -34px #000}
+.wa-h{display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1)}
+.wa-av{width:42px;height:42px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(76,201,240,.5))}
+.wa-t b{display:block;font:700 1rem 'Sora',sans-serif;line-height:1.2}
+.wa-t small{color:#b8c3e3;font-size:.8rem}.wa-t small.ty{color:#4ade80;animation:fxpulse 1.4s infinite}
+.wa-b{flex:1;overflow-y:auto;padding:.8rem .7rem 1rem;display:flex;flex-direction:column;gap:1px;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.6px);background-size:22px 22px;overscroll-behavior:contain}
+.dy{align-self:center;margin:.8rem 0 .4rem;text-align:center}
+.dy span,.dy .more{display:inline-block;background:rgba(255,255,255,.1);color:#b8c3e3;padding:.2rem .85rem;border-radius:999px;font-size:.75rem;text-transform:capitalize}
+.dy .more{border:0;cursor:pointer;text-transform:none;color:#f6c244}
+.dy.un span{background:rgba(246,194,68,.2);color:#f6c244;text-transform:none}
+.mw{display:flex;align-items:flex-end;gap:.4rem;margin-top:.4rem;max-width:100%}
+.mw.g{margin-top:1px}.mw.me{justify-content:flex-end}
+.mw .av{width:30px;height:30px;font-size:.72rem;flex:none}.mw .sp{width:30px;flex:none}
+.bb{position:relative;max-width:min(78%,520px);padding:.4rem .65rem .3rem;border-radius:14px;background:rgba(255,255,255,.1);cursor:pointer;overflow-wrap:anywhere;box-shadow:0 1px 2px rgba(0,0,0,.25);animation:fxpop .28s cubic-bezier(.2,1.3,.3,1)}
+@keyframes fxpop{from{opacity:0;transform:scale(.92) translateY(8px)}}
+.mw.ot .bb{border-bottom-left-radius:4px}.mw.ot.g .bb{border-bottom-left-radius:14px}
+.mw.me .bb{background:linear-gradient(135deg,#0f6b57,#0b4f43);border-bottom-right-radius:4px}.mw.me.g .bb{border-bottom-right-radius:14px}
+.sn{display:block;font:700 .78rem 'Sora',sans-serif;margin-bottom:1px}
+.tx{white-space:pre-wrap;line-height:1.4}.tx a{color:#4cc9f0;text-decoration:underline}
+.mt{float:right;margin:.35rem 0 0 .7rem;font-size:.68rem;color:rgba(243,246,255,.62);display:inline-flex;gap:.25rem;align-items:center}
+.tk{font-style:normal;letter-spacing:-.15em;font-size:.78rem}.tk.bl{color:#4cc9f0}
+.bb.emo{background:none!important;box-shadow:none;padding:0}.bb.emo .tx{font-size:2.3rem;line-height:1.15}.bb.emo .mt{display:block;float:none;text-align:right}
+.rq{border-left:3px solid #f6c244;background:rgba(0,0,0,.24);border-radius:8px;padding:.25rem .5rem;margin-bottom:.3rem;cursor:pointer}
+.rq b{display:block;color:#f6c244;font-size:.76rem}.rq span{display:block;font-size:.82rem;color:#b8c3e3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.rxs{clear:both;display:flex;gap:.25rem;flex-wrap:wrap;margin:.25rem 0 .1rem}
+.rx{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:0 .45rem;font-size:.8rem;cursor:pointer}.rx.mi{border-color:#4cc9f0;background:rgba(76,201,240,.2)}
+.mw.fl .bb{animation:fxflash 1.4s}
+@keyframes fxflash{0%,65%{box-shadow:0 0 0 3px #f6c244}}
+.wa-dn{position:absolute;right:14px;bottom:84px;width:42px;height:42px;border-radius:50%;border:0;background:#0f6b57;color:#fff;font-size:1.2rem;cursor:pointer;box-shadow:0 8px 20px -6px #000;z-index:3;animation:fxpop .25s}
+.wa-dn span{position:absolute;top:-6px;right:-4px;background:#e21b3c;border-radius:999px;font:700 .7rem sans-serif;padding:.05rem .4rem}
+.wa-rp{display:flex;align-items:center;gap:.6rem;padding:.4rem .8rem;background:rgba(255,255,255,.07);border-top:1px solid rgba(255,255,255,.1)}
+.wa-rq{flex:1;border-left:3px solid #f6c244;padding-left:.6rem;min-width:0}.wa-rq b{display:block;color:#f6c244;font-size:.8rem}
+.wa-rq span{display:block;color:#b8c3e3;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-rp button{background:none;border:0;color:#b8c3e3;font-size:1.1rem;cursor:pointer}
+.wa-f{display:flex;align-items:flex-end;gap:.5rem;padding:.55rem .6rem;background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.1)}
+.wa-f textarea{flex:1;resize:none;max-height:120px;min-height:44px;border-radius:22px;padding:.65rem 1rem;line-height:1.35;font-size:1rem}
+.wa-i{width:44px;height:44px;border:0;border-radius:50%;background:none;font-size:1.4rem;cursor:pointer;flex:none}
+.wa-s{width:46px;height:46px;border:0;border-radius:50%;background:linear-gradient(135deg,#ffd877,#f6c244);color:#1b1403;font-size:1.2rem;cursor:pointer;flex:none;transition:transform .2s}.wa-s:hover{transform:scale(1.08)}
+.wa-em{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:2px;padding:.5rem;max-height:170px;overflow-y:auto;background:rgba(8,18,48,.96);border-top:1px solid rgba(255,255,255,.1)}
+.wa-em button{background:none;border:0;font-size:1.4rem;padding:.3rem;border-radius:8px;cursor:pointer}.wa-em button:hover{background:rgba(255,255,255,.1)}
+.mm{position:fixed;z-index:300;min-width:210px;background:rgba(10,22,58,.97);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:.4rem;box-shadow:0 20px 50px -10px #000;animation:fxpop .18s}
+.mm .mr{display:flex;justify-content:space-between;padding:.2rem .3rem .4rem;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:.2rem}
+.mm button{display:block;width:100%;text-align:left;background:none;border:0;color:#f3f6ff;padding:.5rem .6rem;border-radius:10px;font:500 .95rem 'Manrope',sans-serif;cursor:pointer}
+.mm .mr button{width:auto;font-size:1.35rem;padding:.15rem .3rem}.mm button:hover{background:rgba(255,255,255,.1)}.mm .dg{color:#ff8d7a}
+@media(max-width:600px){.wa{height:calc(100vh - 205px);height:calc(100dvh - 205px)}.bb{max-width:84%}.rq span{max-width:170px}}
+@media(prefers-reduced-motion:reduce){.bb,.wa-dn,.mm,.wa-t small.ty{animation:none!important}}

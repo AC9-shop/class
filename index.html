@@ -145,9 +145,14 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 <div id="alist"></div></section>
 
 <section id="v-chat" hidden>
-<h2>Discussion</h2>
-<div class="card chat"><div class="msgs" id="msgs"></div>
-<form class="send" id="sf"><input id="mi" maxlength="500" placeholder="Écris un message…" autocomplete="off"><button class="btn" type="submit">Envoyer</button></form></div></section>
+<div class="wa">
+<div class="wa-h"><img class="wa-av" src="logo-classe-sm.png" alt=""><div class="wa-t"><b>1BAC SM1 · Discussion</b><small id="wst"></small></div></div>
+<div class="wa-b" id="msgs"></div>
+<button class="wa-dn" id="wdn" type="button" hidden aria-label="Aller aux derniers messages">↓<span id="wdc" hidden></span></button>
+<div class="wa-rp" id="wrp" hidden><div class="wa-rq"><b id="wrn"></b><span id="wrt"></span></div><button type="button" id="wrx" aria-label="Annuler la réponse">✕</button></div>
+<div class="wa-em" id="wep" hidden></div>
+<form class="wa-f" id="sf"><button type="button" class="wa-i" id="wem" aria-label="Emojis">😊</button><textarea id="mi" rows="1" maxlength="500" placeholder="Écris un message… (formule : $x^2$)" autocomplete="off"></textarea><button class="wa-s" type="submit" aria-label="Envoyer">➤</button></form>
+</div></section>
 
 <section id="v-admin" hidden>
 <h2>Administration</h2>
@@ -169,6 +174,9 @@ td code{background:rgba(255,255,255,.1);padding:.1rem .4rem;border-radius:6px}
 <label for="po">Mot de passe actuel</label><input id="po" type="password" autocomplete="current-password"><label for="pnw">Nouveau mot de passe (6 caractères minimum)</label><input id="pnw" type="password" autocomplete="new-password">
 <p class="err" id="pe"></p><div class="row"><button class="btn s" id="psv" type="button">Changer</button><button class="btn s o" id="plo" type="button">Se déconnecter</button><button class="btn s o" id="pcl" type="button">Fermer</button></div></div></div>
 
+<div class="mm" id="mm" hidden></div>
+<div class="modal" id="inf" hidden><div class="card"><h3>Infos du message</h3><div id="infb" style="margin-top:.6rem"></div><div class="row"><button class="btn s o" id="infx" type="button">Fermer</button></div></div></div>
+
 <script>
 (async()=>{
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -185,6 +193,7 @@ const app=A.initializeApp(CFG),auth=Au.getAuth(app),db=D.getDatabase(app);
 const EM=u=>u+'@1bacsm1.local',R=p=>D.ref(db,p);
 let me=null,subs=[],P={},PR={},AN={},MS={},view='home',kv=k=>{try{return +localStorage.getItem(k)||0}catch(e){return 0}},sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let CF={},SC={},DY={},cdT=null,busy=false;
+let TY={},RD={},rdOk=false,chatLim=100,rpl=null,pend=0,seenAt=0,lastTy=0,lastRd=0,stick=false,knownMax=0,msgUn=null,mk=null,last=0;
 const COL=['#e21b3c','#1368ce','#d89e00','#26890c','#8a3ffc','#0f9d9d','#d6336c','#e8590c'];
 const hue=s=>COL[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COL.length];
 const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
@@ -198,7 +207,7 @@ const dmy=t=>new Date(t).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}
 $('#lf').onsubmit=async e=>{e.preventDefault();const u=$('#lu').value.trim().toLowerCase().replace(/\s+/g,'');$('#le').textContent='';$('#lb').disabled=true;
  try{await Au.signInWithEmailAndPassword(auth,EM(u),$('#lp').value)}catch(err){$('#le').textContent=errMsg(err)}$('#lb').disabled=false};
 Au.onAuthStateChanged(auth,u=>{if(u)boot(u);else{teardown();$('#app').hidden=true;$('#login').hidden=false}});
-function teardown(){subs.forEach(f=>{try{f()}catch(e){}});subs=[];me=null;P={};PR={};AN={};MS={};CF={};SC={};DY={};clearInterval(cdT)}
+function teardown(){subs.forEach(f=>{try{f()}catch(e){}});subs=[];me=null;P={};PR={};AN={};MS={};CF={};SC={};DY={};TY={};RD={};rdOk=false;rpl=null;pend=0;seenAt=0;knownMax=0;if(msgUn){msgUn();msgUn=null}const _m=$('#msgs');if(_m){_m.innerHTML='';delete _m.dataset.init}clearInterval(cdT)}
 const on=(path,cb,q)=>{subs.push(D.onValue(q||R(path),s=>cb(s.val()||{}),err=>{}))};
 
 async function boot(u){
@@ -216,7 +225,7 @@ async function boot(u){
  subs.push(D.onValue(R('.info/connected'),s=>{if(s.val()===true)D.onDisconnect(pr).set({state:'offline',last:D.serverTimestamp()}).then(()=>D.set(pr,{state:'online',last:D.serverTimestamp()}))}));
  on('profiles',v=>{P=v;renderHome()});on('presence',v=>{PR=v;renderHome()});
  on('announcements',v=>{AN=v;renderAnn();renderHome();badges()});
- on('messages',v=>{MS=v;renderChat();badges()},D.query(R('messages'),D.limitToLast(100)));
+ subMsgs();on('typing',v=>{TY=v;updHead()});on('reads',v=>{RD=v;rdOk=true;renderChat();badges()});subs.push(()=>{if(msgUn){msgUn();msgUn=null}});
  on('config',v=>{CF=v;renderCd()});on('scores',v=>{SC=v;renderPod()});on('daily/'+u.uid,v=>{DY=v;renderDaily()});
  try{if(window.FX&&!sessionStorage.getItem('welcomed')){sessionStorage.setItem('welcomed','1');setTimeout(()=>FX.rain(),1200)}}catch(e){}
  go('home');tick();
@@ -267,11 +276,11 @@ async function answerDaily(k,q,day){if(busy)return;busy=true;const ok=q.o[k].ok;
 /* ---- navigation ---- */
 function moveInd(){const b=$('#nav button.on'),i=$('#ind');if(!b||!i)return;i.style.width=b.offsetWidth+'px';i.style.transform='translateX('+b.offsetLeft+'px)'}
 addEventListener('resize',moveInd);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveInd);
-function go(v){view=v;['home','ann','chat','admin'].forEach(x=>$('#v-'+x).hidden=x!==v);$$('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));moveInd();
- if(v==='ann'){sv('ann_seen',Date.now())}if(v==='chat'){sv('chat_seen',Date.now());const m=$('#msgs');setTimeout(()=>m.scrollTop=m.scrollHeight,0)}badges();scrollTo(0,0)}
+function go(v){const was=view;view=v;['home','ann','chat','admin'].forEach(x=>$('#v-'+x).hidden=x!==v);$$('#nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));moveInd();
+ if(v==='ann'){sv('ann_seen',Date.now())}if(v==='chat')openChat();if(was==='chat'&&v!=='chat'){seenAt=0;closeMenu()}badges();scrollTo(0,0)}
 $$('#nav button[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));$$('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.go)});
-function badges(){const as=kv('ann_seen'),cs=kv('chat_seen');
- const na=view==='ann'?0:Object.values(AN).filter(a=>a.ts>as).length,nc=view==='chat'?0:Object.values(MS).filter(m=>m.ts>cs&&m.uid!==(me&&me.uid)).length;
+function badges(){const as=kv('ann_seen');
+ const na=view==='ann'?0:Object.values(AN).filter(a=>a.ts>as).length,nc=view==='chat'||!rdOk||!me?0:Object.values(MS).filter(m=>m.uid!==me.uid&&m.ts>(RD[me.uid]||0)).length;
  moveInd();$('#ba').hidden=!na;$('#ba').textContent=na;$('#bc').hidden=!nc;$('#bc').textContent=nc}
 
 /* ---- accueil ---- */
@@ -279,7 +288,7 @@ function renderHome(){if(!me)return;const ids=Object.keys(P);const on_=u=>PR[u]&
  ids.sort((a,b)=>(on_(b)-on_(a))||P[a].name.localeCompare(P[b].name));
  {const _n=ids.filter(on_).length;if(window.FX){FX.count($('#son'),_n);FX.count($('#stt'),ids.length)}else{$('#son').textContent=_n;$('#stt').textContent=ids.length}}
  $('#ros').innerHTML=ids.map(u=>{const p=P[u],o=on_(u);return '<div class="st"><span class="av '+(o?'on':'')+'" style="background:'+hue(u)+'">'+esc(ini(p.name))+'<i class="dot"></i></span><div><b>'+esc(p.name)+(u===me.uid?' (toi)':'')+'</b><small>'+(o?'en ligne':ago(PR[u]&&PR[u].last))+'</small></div></div>'}).join('');
- const l=Object.values(AN).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.ts-a.ts)[0],el=$('#last');
+ updHead();const l=Object.values(AN).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.ts-a.ts)[0],el=$('#last');
  if(l){el.hidden=false;el.innerHTML='<h3 class="t">Dernière annonce</h3><h3>'+esc(l.title)+'</h3><div class="meta">'+dmy(l.ts)+'</div><p>'+esc(l.text.length>220?l.text.slice(0,220)+'…':l.text)+'</p>'}else el.hidden=true}
 
 /* ---- annonces ---- */
@@ -289,14 +298,80 @@ function renderAnn(){const ks=Object.keys(AN).sort((a,b)=>(AN[b].pin?1:0)-(AN[a]
 $('#apost').onclick=async()=>{const t=$('#at').value.trim(),x=$('#ax').value.trim();$('#aerr').textContent='';if(!t||!x){$('#aerr').textContent='Titre et message obligatoires.';return}
  try{await D.push(R('announcements'),{title:t,text:x,pin:$('#ap').checked,by:me.name,ts:D.serverTimestamp()});$('#at').value=$('#ax').value='';$('#ap').checked=false}catch(e){$('#aerr').textContent=errMsg(e)}};
 
-/* ---- discussion ---- */
-function renderChat(){const el=$('#msgs'),near=el.scrollHeight-el.scrollTop-el.clientHeight<80;const ks=Object.keys(MS).sort((a,b)=>MS[a].ts-MS[b].ts);let day='',h='';
- ks.forEach(k=>{const m=MS[k],d=dmy(m.ts);if(d!==day){day=d;h+='<div class="day">'+d+'</div>'}const mine=me&&m.uid===me.uid;
-  h+='<div class="m'+(mine?' mine':'')+'"><b>'+esc(mine?'Toi':m.name)+'<small>'+hm(m.ts)+'</small>'+(me&&me.admin?'<button data-m="'+k+'" type="button" aria-label="Supprimer">✕</button>':'')+'</b>'+esc(m.text)+'</div>'});
- el.innerHTML=h||'<p class="mut" style="text-align:center">Aucun message. Lance la discussion !</p>';
- $$('[data-m]').forEach(b=>b.onclick=()=>D.remove(R('messages/'+b.dataset.m)));if(near||view==='chat')el.scrollTop=el.scrollHeight;if(view==='chat')sv('chat_seen',Date.now())}
-let last=0;$('#sf').onsubmit=async e=>{e.preventDefault();const t=$('#mi').value.trim();if(!t||Date.now()-last<700)return;last=Date.now();$('#mi').value='';
- try{await D.push(R('messages'),{uid:me.uid,name:me.name,text:t.slice(0,500),ts:D.serverTimestamp()})}catch(err){alert(errMsg(err))}};
+/* ---- discussion (style messagerie) ---- */
+const EMA=['😀','😂','🤣','😊','😍','🥰','😎','🤔','😅','😭','😡','🙏','👍','👎','👏','🔥','💯','✅','❌','❤️','💙','🎉','🤝','💪','🧠','📚','✏️','📐','🧮','😴','🥳','😮','🙄','😬','🤯','😇','∑','π','√','∞'],RX=['👍','❤️','😂','😮','🙏','🔥'];
+const dayL=t=>{const d=new Date(t),n=new Date(),y=new Date();y.setDate(n.getDate()-1);const k=x=>x.toDateString();return k(d)===k(n)?"Aujourd'hui":k(d)===k(y)?'Hier':d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})};
+const isEmo=t=>{try{return /^(?:\p{Extended_Pictographic}|\u200d|\ufe0f|\s){1,8}$/u.test(t)}catch(e){return false}};
+function fmt(t){return t.split(/(\$[^$\n]+\$)/).map((p,i)=>{let x=esc(p);if(i%2)return x;
+ x=x.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+ return x.replace(/(^|[\s(])\*([^*\n]+)\*(?=$|[\s.,!?)])/g,'$1<b>$2</b>').replace(/(^|[\s(])_([^_\n]+)_(?=$|[\s.,!?)])/g,'$1<i>$2</i>').replace(/(^|[\s(])~([^~\n]+)~(?=$|[\s.,!?)])/g,'$1<s>$2</s>')}).join('')}
+function subMsgs(){if(msgUn)msgUn();msgUn=D.onValue(D.query(R('messages'),D.limitToLast(chatLim)),s=>{MS=s.val()||{};renderChat();badges()})}
+const nearEnd=()=>{const e=$('#msgs');return e.scrollHeight-e.scrollTop-e.clientHeight<100};
+function toBottom(sm){const e=$('#msgs');if(sm&&e.scrollTo)e.scrollTo({top:e.scrollHeight,behavior:'smooth'});else e.scrollTop=e.scrollHeight;pend=0;updDn()}
+function updDn(){const near=nearEnd();$('#wdn').hidden=near&&!pend;$('#wdc').hidden=!pend;$('#wdc').textContent=pend}
+$('#msgs').addEventListener('scroll',()=>{if(nearEnd()){pend=0;markRead()}updDn();closeMenu()},{passive:true});
+$('#wdn').onclick=()=>toBottom(true);
+function renderChat(){if(!me)return;const el=$('#msgs'),near=nearEnd(),st=el.scrollTop,firstR=!el.dataset.init;
+ const ks=Object.keys(MS).sort((a,b)=>MS[a].ts-MS[b].ts),others=Object.keys(P).filter(u=>u!==me.uid);let day='',prev=null,div=false,h='';
+ if(ks.length>=chatLim)h+='<div class="dy"><button type="button" class="more" id="wmore">Charger les messages précédents</button></div>';
+ ks.forEach(k=>{const m=MS[k],mine=m.uid===me.uid,dl=dayL(m.ts);
+  if(dl!==day){day=dl;h+='<div class="dy"><span>'+dl+'</span></div>';prev=null}
+  if(!div&&!mine&&seenAt&&m.ts>seenAt){h+='<div class="dy un"><span>Messages non lus</span></div>';div=true;prev=null}
+  const grp=prev&&prev.uid===m.uid&&m.ts-prev.ts<120000;prev=m;
+  let tk='';if(mine){const n=others.filter(u=>RD[u]&&RD[u]>=m.ts).length;tk=!n?'<i class="tk">✓</i>':'<i class="tk'+(others.length&&n>=others.length?' bl':'')+'">✓✓</i>'}
+  const rx={},re=m.re||{};Object.values(re).forEach(e=>rx[e]=(rx[e]||0)+1);const emo=isEmo(m.text)&&!m.rp;
+  h+='<div class="mw '+(mine?'me':'ot')+(grp?' g':'')+'" data-k="'+esc(k)+'">'+(!mine?(grp?'<span class="sp"></span>':'<span class="av" style="background:'+hue(m.uid)+'">'+esc(ini(m.name||'?'))+'</span>'):'')
+   +'<div class="bb'+(emo?' emo':'')+'">'+(!mine&&!grp?'<b class="sn" style="color:'+hue(m.uid)+'">'+esc(m.name||'?')+'</b>':'')
+   +(m.rp?'<div class="rq" data-r="'+esc(m.rp.k)+'"><b>'+esc(m.rp.n)+'</b><span>'+esc(m.rp.t)+'</span></div>':'')
+   +'<span class="tx">'+fmt(m.text||'')+'</span><span class="mt">'+hm(m.ts)+tk+'</span>'
+   +(Object.keys(rx).length?'<div class="rxs">'+Object.entries(rx).map(([e,n])=>'<span class="rx'+(re[me.uid]===e?' mi':'')+'" data-e="'+esc(e)+'">'+esc(e)+(n>1?' '+n:'')+'</span>').join('')+'</div>':'')+'</div></div>'});
+ el.innerHTML=h||'<p class="mut" style="text-align:center;margin:2rem 0">Aucun message. Lance la discussion !</p>';rmath(el);
+ const mx=ks.length?MS[ks[ks.length-1]].ts:0;
+ if(firstR){el.dataset.init=1;el.scrollTop=el.scrollHeight}
+ else if(near||stick){el.scrollTop=el.scrollHeight;pend=0}
+ else{el.scrollTop=st;pend+=ks.filter(k=>MS[k].ts>knownMax&&MS[k].uid!==me.uid).length}
+ stick=false;knownMax=mx;updDn();if(view==='chat'&&(near||firstR)&&!document.hidden)markRead()}
+function openChat(){seenAt=RD[me.uid]||0;renderChat();setTimeout(()=>{toBottom(false)},0);markRead();updHead()}
+let rdT=null;
+function markRead(){if(!me||view!=='chat'||document.hidden)return;const n=Date.now();if(n-lastRd<1500){clearTimeout(rdT);rdT=setTimeout(markRead,1500-(n-lastRd)+60);return}lastRd=n;D.set(R('reads/'+me.uid),D.serverTimestamp()).catch(()=>{})}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)markRead()});
+function updHead(){if(!me)return;const n=Date.now(),t=Object.keys(TY).filter(u=>u!==me.uid&&n-TY[u]<5000&&P[u]).map(u=>first(P[u].name)),on_=Object.keys(P).filter(u=>PR[u]&&PR[u].state==='online').length,el=$('#wst');
+ el.className=t.length?'ty':'';el.textContent=t.length?(t.length===1?t[0]+' écrit…':t.length===2?t.join(' et ')+' écrivent…':t[0]+' et '+(t.length-1)+' autres écrivent…'):on_+' en ligne · '+Object.keys(P).length+' membres'}
+setInterval(updHead,2000);
+/* menu d'actions sur un message */
+const mm=$('#mm');
+function closeMenu(){mm.hidden=true;mk=null}
+function openMenu(w){const k=w.dataset.k,m=MS[k];if(!m)return;mk=k;const mine=m.uid===me.uid,r=w.querySelector('.bb').getBoundingClientRect();
+ mm.innerHTML='<div class="mr">'+RX.map(e=>'<button type="button" data-a="re" data-e="'+e+'">'+e+'</button>').join('')+'</div><button type="button" data-a="rp">↩ Répondre</button><button type="button" data-a="cp">⧉ Copier</button>'+(mine?'<button type="button" data-a="in">ⓘ Infos</button>':'')+((mine||me.admin)?'<button type="button" data-a="dl" class="dg">🗑 Supprimer</button>':'');
+ mm.hidden=false;const mw=mm.offsetWidth,mh=mm.offsetHeight;let x=mine?r.right-mw:r.left,y=r.top-mh-6;if(y<70)y=r.bottom+6;mm.style.left=Math.max(8,Math.min(x,innerWidth-mw-8))+'px';mm.style.top=Math.max(8,Math.min(y,innerHeight-mh-8))+'px'}
+$('#msgs').addEventListener('click',e=>{
+ if(e.target.closest('#wmore')){chatLim+=100;subMsgs();return}
+ const rq=e.target.closest('.rq');if(rq){jump(rq.dataset.r);return}
+ const rx=e.target.closest('.rx');if(rx){react(rx.closest('.mw').dataset.k,rx.dataset.e);return}
+ if(e.target.closest('a'))return;
+ const bb=e.target.closest('.bb');if(bb&&!e.target.closest('.sn'))openMenu(bb.closest('.mw'));else closeMenu()});
+document.addEventListener('click',e=>{if(!mm.hidden&&!e.target.closest('#mm')&&!e.target.closest('.bb'))closeMenu()});
+mm.onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,k=mk,m=MS[k];closeMenu();if(!m)return;
+ if(a==='re')react(k,b.dataset.e);else if(a==='rp')setReply(k);else if(a==='cp'){try{navigator.clipboard.writeText(m.text)}catch(x){}}else if(a==='in')info(k);
+ else if(a==='dl'&&confirm('Supprimer ce message ?'))D.remove(R('messages/'+k)).catch(x=>alert(errMsg(x)))};
+function react(k,e){const m=MS[k];if(!m)return;const ref=R('messages/'+k+'/re/'+me.uid);((m.re||{})[me.uid]===e?D.remove(ref):D.set(ref,e)).catch(x=>alert(errMsg(x)))}
+function jump(k){const w=$('#msgs').querySelector('[data-k="'+k+'"]');if(!w)return;if(w.scrollIntoView)w.scrollIntoView({block:'center',behavior:'smooth'});w.classList.add('fl');setTimeout(()=>w.classList.remove('fl'),1400)}
+function setReply(k){const m=MS[k];rpl={k,n:m.name,t:m.text.replace(/\s+/g,' ').slice(0,80)};$('#wrn').textContent=rpl.n;$('#wrt').textContent=rpl.t;$('#wrp').hidden=false;$('#mi').focus()}
+function cancelReply(){rpl=null;$('#wrp').hidden=true}$('#wrx').onclick=cancelReply;
+function info(k){const m=MS[k],o=Object.keys(P).filter(u=>u!==me.uid),rd=o.filter(u=>RD[u]&&RD[u]>=m.ts),nr=o.filter(u=>!(RD[u]&&RD[u]>=m.ts));
+ $('#infb').innerHTML='<p style="margin:0 0 .4rem"><b>Lu par ('+rd.length+')</b></p><p class="mut" style="margin:0 0 .8rem">'+(rd.map(u=>esc(P[u].name)).join(', ')||'Personne pour le moment')+'</p><p style="margin:0 0 .4rem"><b>Pas encore lu ('+nr.length+')</b></p><p class="mut" style="margin:0">'+(nr.map(u=>esc(P[u].name)).join(', ')||'—')+'</p>';$('#inf').hidden=false}
+$('#infx').onclick=()=>$('#inf').hidden=true;
+/* emojis, saisie, envoi */
+$('#wep').innerHTML=EMA.map(e=>'<button type="button">'+e+'</button>').join('');
+$('#wep').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=$('#mi'),s=t.selectionStart==null?t.value.length:t.selectionStart,f=t.selectionEnd==null?s:t.selectionEnd;t.value=t.value.slice(0,s)+b.textContent+t.value.slice(f);t.focus();t.selectionStart=t.selectionEnd=s+b.textContent.length};
+$('#wem').onclick=()=>{$('#wep').hidden=!$('#wep').hidden};
+$('#mi').addEventListener('input',e=>{const t=e.target;t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px';const n=Date.now();if(t.value&&me&&n-lastTy>2500){lastTy=n;D.set(R('typing/'+me.uid),n).catch(()=>{})}});
+$('#mi').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(hover:hover)').matches){e.preventDefault();sendMsg()}});
+async function sendMsg(){const t=$('#mi').value.trim();if(!t||Date.now()-last<600)return;last=Date.now();
+ const o={uid:me.uid,name:me.name,text:t.slice(0,500),ts:D.serverTimestamp()};if(rpl)o.rp={k:rpl.k,n:rpl.n,t:rpl.t};
+ $('#mi').value='';$('#mi').style.height='auto';stick=true;cancelReply();$('#wep').hidden=true;lastTy=0;D.remove(R('typing/'+me.uid)).catch(()=>{});
+ try{await D.push(R('messages'),o)}catch(err){alert(errMsg(err))}}
+$('#sf').onsubmit=e=>{e.preventDefault();sendMsg()};
 
 /* ---- profil ---- */
 $('#meb').onclick=()=>{$('#pn').textContent=me.name;$('#pu').textContent='Identifiant : '+me.username;$('#pe').textContent='';$('#po').value=$('#pnw').value='';$('#mod').hidden=false};
